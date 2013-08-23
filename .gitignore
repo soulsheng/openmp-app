@@ -5,3 +5,8 @@
 /environment/*.sdf
 /environment/*.suo
 /environment/win32/Debug
+/environment/mfc/Debug
+/environment/Release
+/environment/console/Release
+/environment/mfc/Release
+/environment/win32/Release
