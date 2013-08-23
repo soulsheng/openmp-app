@@ -1,0 +1,6 @@
+/environment/ipch
+/environment/Debug
+/environment/console/Debug
+/environment/*.opensdf
+/environment/*.sdf
+/environment/*.suo
