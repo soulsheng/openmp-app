@@ -4,3 +4,4 @@
 /environment/*.opensdf
 /environment/*.sdf
 /environment/*.suo
+/environment/win32/Debug
