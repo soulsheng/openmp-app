@@ -24,10 +24,10 @@ class CTimer
 {
 public:
 	int createTimer();
-	int resetTimer(int handle);
-	int startTimer(int handle);
-	int stopTimer(int handle);
-	double readTimer(int handle);
+	int resetTimer(int handle=0);
+	int startTimer(int handle=0);
+	int stopTimer(int handle=0);
+	double readTimer(int handle=0);
 
 
 	void printfTimer();

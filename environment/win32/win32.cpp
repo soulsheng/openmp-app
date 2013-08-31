@@ -3,6 +3,7 @@
 
 #include "stdafx.h"
 #include "win32.h"
+#include "../common/timer.h"
 
 #define MAX_LOADSTRING 100
 
@@ -42,6 +43,10 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 
 	hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_WIN32));
 
+	CTimer  timer1;
+	timer1.createTimer();
+	timer1.startTimer();
+
 	// 主消息循环:
 	while (GetMessage(&msg, NULL, 0, 0))
 	{
@@ -51,6 +56,12 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 			DispatchMessage(&msg);
 		}
 	}
+
+	timer1.stopTimer();
+	float fTime = timer1.readTimer();
+	char  text[20];
+	sprintf( text, "%f", fTime );
+	MessageBox( NULL, text, "时间", 0 );
 
 	return (int) msg.wParam;
 }
