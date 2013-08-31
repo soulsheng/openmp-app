@@ -4,6 +4,7 @@
 #include "stdafx.h"
 #include "win32.h"
 #include "../common/timer.h"
+#include "../common/app-MatrixMultVector.h"
 
 #define MAX_LOADSTRING 100
 
@@ -17,6 +18,27 @@ ATOM				MyRegisterClass(HINSTANCE hInstance);
 BOOL				InitInstance(HINSTANCE, int);
 LRESULT CALLBACK	WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK	About(HWND, UINT, WPARAM, LPARAM);
+
+
+void   test()
+{
+	CMatrixMultVector mv;
+	mv.mxvInit();
+
+	CTimer  timer1;
+	timer1.createTimer();
+	timer1.startTimer();
+
+	mv.mxv();
+
+	timer1.stopTimer();
+	float fTime = timer1.readTimer();
+	char  text[20];
+	sprintf( text, "%f", fTime );
+	MessageBox( NULL, text, "时间", 0 );
+
+	mv.mxvUnInit();
+}
 
 int APIENTRY _tWinMain(HINSTANCE hInstance,
                      HINSTANCE hPrevInstance,
@@ -43,9 +65,6 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 
 	hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_WIN32));
 
-	CTimer  timer1;
-	timer1.createTimer();
-	timer1.startTimer();
 
 	// 主消息循环:
 	while (GetMessage(&msg, NULL, 0, 0))
@@ -56,12 +75,6 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 			DispatchMessage(&msg);
 		}
 	}
-
-	timer1.stopTimer();
-	float fTime = timer1.readTimer();
-	char  text[20];
-	sprintf( text, "%f", fTime );
-	MessageBox( NULL, text, "时间", 0 );
 
 	return (int) msg.wParam;
 }
@@ -114,6 +127,8 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
 //
 BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 {
+   test();
+
    HWND hWnd;
 
    hInst = hInstance; // 将实例句柄存储在全局变量中

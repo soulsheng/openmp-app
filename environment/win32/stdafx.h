@@ -17,5 +17,7 @@
 #include <memory.h>
 #include <tchar.h>
 
+#define ENABLE_PARALLEL	1 // 多线程并行开关
+
 
 // TODO: 在此处引用程序需要的其他头文件

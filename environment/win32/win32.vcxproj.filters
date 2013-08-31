@@ -42,6 +42,9 @@
     <ClInclude Include="..\common\timer.h">
       <Filter>common</Filter>
     </ClInclude>
+    <ClInclude Include="..\common\app-MatrixMultVector.h">
+      <Filter>common</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -51,6 +54,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="..\common\timer.cpp">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\app-MatrixMultVector.cpp">
       <Filter>common</Filter>
     </ClCompile>
   </ItemGroup>
