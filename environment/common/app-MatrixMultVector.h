@@ -55,11 +55,11 @@ public:
 	CMatrixMultVector();
 	~CMatrixMultVector();
 protected:
-	void mxvSerial(int m, int n, float *  a,
-		float *  b, float *  c);
+	void mxvSerial( );
 
-	void mxvParallel(int m, int n, float *  a, 
-		float *  b,	float *  c);
+	void mxvParallel( );
+
+	void mxvRef( );
 
 private:
 	float *a,*b,*c;

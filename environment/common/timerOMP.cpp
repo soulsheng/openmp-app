@@ -58,7 +58,7 @@ void CTimerOMP::printfTimer( std::ostringstream &oss )
 	for (TimerValueListItr itr=_timeValueList.begin(); itr!=_timeValueList.end(); itr++,nItem++)
 	{
 		std::cout << itr->first << ":  " << itr->second << std::endl;
-		if ( nItem >= 10 )
+		if ( nItem >= 20 )
 		{
 			if ( 1.5f*dLast < itr->second )
 			{

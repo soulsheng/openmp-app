@@ -44,6 +44,8 @@
 
 #include "app-MatrixMultVector.h"
 
+#define SIZE_SCALE_M			16
+#define SIZE_SCALE_N			16
 #define SIZE_MATRIX_M		1000
 #define SIZE_MATRIX_N		1000
 
@@ -65,8 +67,7 @@ int CMatrixMultVector::mxv(  bool bMulti )
    return(0);
 }
 
-void CMatrixMultVector::mxvSerial(int m, int n, float *  a, float *  b,
-         float *  c)
+void CMatrixMultVector::mxvSerial( )
 {
    int i, j;
 
@@ -79,13 +80,11 @@ void CMatrixMultVector::mxvSerial(int m, int n, float *  a, float *  b,
 }
 
 
-void CMatrixMultVector::mxvParallel(int m, int n, float *  a, float *  b,
-	float *  c)
+void CMatrixMultVector::mxvParallel( )
 {
 	int i, j;
 
-#pragma omp parallel for default(none) \
-	shared(m,n,a,b,c) private(i,j)
+#pragma omp parallel for   private(i,j)
 	for (i=0; i<m; i++)
 	{
 		a[i] = 0.0;
@@ -96,13 +95,13 @@ void CMatrixMultVector::mxvParallel(int m, int n, float *  a, float *  b,
 
 void CMatrixMultVector::mxvInit()
 {
-	m = SIZE_MATRIX_M;
-	n = SIZE_MATRIX_N;
+	m = SIZE_MATRIX_M * SIZE_SCALE_M;
+	n = SIZE_MATRIX_N * SIZE_SCALE_N;
 
 	a=(float *)malloc(m*sizeof(float));
 	b=(float *)malloc(m*n*sizeof(float));
 	c=(float *)malloc(n*sizeof(float));
-	aRef=(float *)malloc(n*sizeof(float));
+	aRef=(float *)malloc(m*sizeof(float));
 
 	int i,j;
 	for (j=0; j<n; j++)
@@ -126,9 +125,9 @@ void CMatrixMultVector::mxvImplement( bool bMulti )
 	m_bMulti = bMulti;
 
 	if( m_bMulti )
-		mxvParallel(m, n, a, b, c);
+		mxvParallel( );
 	else
-		mxvSerial(m, n, a, b, c);
+		mxvSerial( );
 }
 
 CMatrixMultVector::CMatrixMultVector()
@@ -145,7 +144,7 @@ CMatrixMultVector::~CMatrixMultVector()
 
 bool CMatrixMultVector::verify()
 {
-	mxvSerial(m, n, aRef, b, c);
+	mxvRef( );
 
 	for (int i=0; i<m; i++)
 	{
@@ -156,4 +155,16 @@ bool CMatrixMultVector::verify()
 	}
 	
 	return true;
+}
+
+void CMatrixMultVector::mxvRef()
+{
+	int i, j;
+
+	for (i=0; i<m; i++)
+	{
+		aRef[i] = 0.0;
+		for (j=0; j<n; j++)
+			aRef[i] += b[i*n+j]*c[j];
+	}
 }
