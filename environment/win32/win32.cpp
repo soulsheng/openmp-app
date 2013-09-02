@@ -4,6 +4,7 @@
 #include "stdafx.h"
 #include "win32.h"
 #include "../common/timer.h"
+#include "../common/timerOMP.h"
 #include "../common/app-MatrixMultVector.h"
 
 #define MAX_LOADSTRING 100
@@ -20,7 +21,7 @@ LRESULT CALLBACK	WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK	About(HWND, UINT, WPARAM, LPARAM);
 
 CMatrixMultVector mv;
-CTimer  timer1;
+CTimerOMP  timer1;
 
 std::string			resultString;
 

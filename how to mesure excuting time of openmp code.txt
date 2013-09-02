@@ -1,0 +1,18 @@
+如何测量OpenMP程序的运行时间
+
+QueryPerformanceCounter
+
+clock
+
+omp_get_wtime 
+
+
+参考：
+Parallel speedup with OpenMP ——
+http://stackoverflow.com/questions/7925510/parallel-speedup-with-openmp
+
+speedup ——
+http://openmp.org/forum/viewtopic.php?f=8&t=782
+
+Measuring OpenMP performance ——
+http://openmp.org/forum/viewtopic.php?f=8&t=672
