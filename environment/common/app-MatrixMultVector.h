@@ -46,23 +46,26 @@ class CMatrixMultVector
 {
 public:
 
-	int mxv( );
-	void mxvImplement( );
+	int mxv( bool bMulti );
+	void mxvImplement( bool bMulti );
 	void mxvInit( );
 	void mxvUnInit( );
+	bool	verify();
 
 	CMatrixMultVector();
 	~CMatrixMultVector();
 protected:
-	void mxvSerial(int m, int n, double *  a,
-		double *  b, double *  c);
+	void mxvSerial(int m, int n, float *  a,
+		float *  b, float *  c);
 
-	void mxvParallel(int m, int n, double *  a, 
-		double *  b,	double *  c);
+	void mxvParallel(int m, int n, float *  a, 
+		float *  b,	float *  c);
 
 private:
-	double *a,*b,*c;
+	float *a,*b,*c;
+	float *aRef;
 	int m, n;
+	bool m_bMulti;
 };
 
 

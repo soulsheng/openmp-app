@@ -52,20 +52,21 @@
    =
    b[m][n] *  c[n][1]
 */
-int CMatrixMultVector::mxv( )
+int CMatrixMultVector::mxv(  bool bMulti )
 {
+	m_bMulti = bMulti;
 
 	mxvInit();
 
-	mxvImplement();
+	mxvImplement( bMulti );
 
 	mxvUnInit();
 
    return(0);
 }
 
-void CMatrixMultVector::mxvSerial(int m, int n, double *  a, double *  b,
-         double *  c)
+void CMatrixMultVector::mxvSerial(int m, int n, float *  a, float *  b,
+         float *  c)
 {
    int i, j;
 
@@ -78,8 +79,8 @@ void CMatrixMultVector::mxvSerial(int m, int n, double *  a, double *  b,
 }
 
 
-void CMatrixMultVector::mxvParallel(int m, int n, double *  a, double *  b,
-	double *  c)
+void CMatrixMultVector::mxvParallel(int m, int n, float *  a, float *  b,
+	float *  c)
 {
 	int i, j;
 
@@ -98,12 +99,11 @@ void CMatrixMultVector::mxvInit()
 	m = SIZE_MATRIX_M;
 	n = SIZE_MATRIX_N;
 
-	if ( (a=(double *)malloc(m*sizeof(double))) == NULL )
-		perror("memory allocation for a");
-	if ( (b=(double *)malloc(m*n*sizeof(double))) == NULL )
-		perror("memory allocation for b");
-	if ( (c=(double *)malloc(n*sizeof(double))) == NULL )
-		perror("memory allocation for c");
+	a=(float *)malloc(m*sizeof(float));
+	b=(float *)malloc(m*n*sizeof(float));
+	c=(float *)malloc(n*sizeof(float));
+	aRef=(float *)malloc(n*sizeof(float));
+
 	int i,j;
 	for (j=0; j<n; j++)
 		c[j] = 2.0;
@@ -118,23 +118,42 @@ void CMatrixMultVector::mxvUnInit()
 	if (a)	{ free(a); a=NULL; }
 	if (b)	{ free(b); b=NULL; }
 	if (c)	{ free(c); c=NULL; }
+	if (aRef)	{ free(aRef); aRef=NULL; }
 }
 
-void CMatrixMultVector::mxvImplement()
+void CMatrixMultVector::mxvImplement( bool bMulti )
 {
-#if ENABLE_PARALLEL
-	(void) mxvParallel(m, n, a, b, c);
-#else
-	(void) mxvSerial(m, n, a, b, c);
-#endif
+	m_bMulti = bMulti;
+
+	if( m_bMulti )
+		mxvParallel(m, n, a, b, c);
+	else
+		mxvSerial(m, n, a, b, c);
 }
 
 CMatrixMultVector::CMatrixMultVector()
 {
 	a = b = c = NULL;
+	aRef = NULL;
+	m_bMulti = false;
 }
 
 CMatrixMultVector::~CMatrixMultVector()
 {
 	mxvUnInit();
+}
+
+bool CMatrixMultVector::verify()
+{
+	mxvSerial(m, n, aRef, b, c);
+
+	for (int i=0; i<m; i++)
+	{
+		if ( fabs(a[i] - aRef[i]) > 1.0e-3 )
+		{
+			return false;
+		}
+	}
+	
+	return true;
 }

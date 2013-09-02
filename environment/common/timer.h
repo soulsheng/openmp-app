@@ -5,6 +5,8 @@
 #include <map>
 #include <iostream>
 #include <iomanip>
+#include <sstream>
+
 	/**
 	 * Timer
 	 * struct to handle time measuring functionality
@@ -30,9 +32,9 @@ public:
 	double readTimer(int handle=0);
 
 
-	void printfTimer();
+	void printfTimer(  std::ostringstream &oss );
 	void insertTimer(std::string timeString, double timeValue);
-
+	void clear();
 protected:
 	void error(const char* errorMsg);
 	void error(std::string errorMsg);

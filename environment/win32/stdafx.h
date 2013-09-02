@@ -16,6 +16,8 @@
 #include <malloc.h>
 #include <memory.h>
 #include <tchar.h>
+#include <iostream>
+#include <sstream>
 
 #define ENABLE_PARALLEL	1 // 多线程并行开关
 

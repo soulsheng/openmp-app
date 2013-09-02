@@ -19,24 +19,59 @@ BOOL				InitInstance(HINSTANCE, int);
 LRESULT CALLBACK	WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK	About(HWND, UINT, WPARAM, LPARAM);
 
+CMatrixMultVector mv;
+CTimer  timer1;
 
-void   test()
+std::string			resultString;
+
+void   printTime()
 {
-	CMatrixMultVector mv;
-	mv.mxvInit();
+	std::ostringstream oss;
+	timer1.printfTimer( oss );
 
-	CTimer  timer1;
+	resultString += oss.str();
+	resultString += "\n";
+
+	bool bVerifyResult = mv.verify();
+	if ( bVerifyResult )
+		resultString += "success";
+	else
+		resultString += "fail";
+}
+
+void reset()
+{
+	resultString.clear();
+	timer1.clear();
+}
+
+void   testInit()
+{
+	mv.mxvInit();
 	timer1.createTimer();
+}
+
+void   testRun(bool bMulti)
+{
+
+	timer1.resetTimer();
 	timer1.startTimer();
 
-	mv.mxv();
+	mv.mxvImplement(bMulti);
 
 	timer1.stopTimer();
 	float fTime = timer1.readTimer();
 	char  text[20];
 	sprintf( text, "%f", fTime );
-	MessageBox( NULL, text, "时间", 0 );
+	//MessageBox( NULL, text, "时间", 0 );
+	resultString += text;
+	resultString += "\n";
 
+	timer1.insertTimer("时间(s):", fTime);
+}
+
+void   testUnInit()
+{
 	mv.mxvUnInit();
 }
 
@@ -75,6 +110,8 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 			DispatchMessage(&msg);
 		}
 	}
+
+	testUnInit();
 
 	return (int) msg.wParam;
 }
@@ -127,7 +164,8 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
 //
 BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 {
-   test();
+   //test();
+	testInit();
 
    HWND hWnd;
 
@@ -162,7 +200,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	int wmId, wmEvent;
 	PAINTSTRUCT ps;
 	HDC hdc;
-	TCHAR text[ ] = _T("Hello World!");
+	//TCHAR text[ ] = _T("Hello World!");
+	RECT		rect;
 
 	switch (message)
 	{
@@ -178,6 +217,23 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		case IDM_EXIT:
 			DestroyWindow(hWnd);
 			break;
+
+		case ID_SINGLE:
+			testRun( false );
+			break;
+
+		case ID_MULTI:
+			testRun( true );
+			break;
+
+		case ID_STAT_TIME:
+			printTime();
+			break;
+
+		case ID_RESET:
+			reset();
+			break;
+
 		default:
 			return DefWindowProc(hWnd, message, wParam, lParam);
 		}
@@ -185,7 +241,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	case WM_PAINT:
 		hdc = BeginPaint(hWnd, &ps);
 		// TODO: 在此添加任意绘图代码...
-		TextOut(hdc, 0, 0, text, _tcslen( text ) );//  TextOut参考：http://msdn.microsoft.com/en-us/library/dd145133(VS.85).aspx  _tcslen参考：http://www.codeproject.com/Articles/76252/What-are-TCHAR-WCHAR-LPSTR-LPWSTR-LPCTSTR-etc
+		//TextOut(hdc, 0, 0, resultTest.c_str(), resultTest.size() );//  TextOut参考：http://msdn.microsoft.com/en-us/library/dd145133(VS.85).aspx  _tcslen参考：http://www.codeproject.com/Articles/76252/What-are-TCHAR-WCHAR-LPSTR-LPWSTR-LPCTSTR-etc
+		GetClientRect( hWnd, &rect );
+		DrawText(hdc, resultString.c_str(), resultString.size() , &rect ,0);
 		EndPaint(hWnd, &ps);
 		break;
 	case WM_DESTROY:

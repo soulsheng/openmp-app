@@ -110,7 +110,7 @@ void
 	std::cout<<"Error: "<<errorMsg<<std::endl;
 }
 
-void CTimer::printfTimer()
+void CTimer::printfTimer( std::ostringstream &oss )
 {
 	double dAverageTime = 0.0f;
 	double dMeanSquareError = 0.0f;
@@ -122,7 +122,7 @@ void CTimer::printfTimer()
 	for (TimerValueListItr itr=_timeValueList.begin(); itr!=_timeValueList.end(); itr++,nItem++)
 	{
 		std::cout << itr->first << ":  " << itr->second << std::endl;
-		if ( nItem >= 100 )
+		if ( nItem >= 10 )
 		{
 			if ( 1.5f*dLast < itr->second )
 			{
@@ -154,10 +154,10 @@ void CTimer::printfTimer()
 		dMeanSquareError += (dValidTimeVec[i] - dAverageTime)*(dValidTimeVec[i] - dAverageTime);
 	}
 
-	std::cout << "AverageTime is: " << std::setprecision(3) << dAverageTime << std::endl;
-	std::cout << "MaxTime is: " << dMax  << ", MinTime is: " << dMin<< std::endl ;
-	std::cout << "MeanSquareError is: " << sqrtl(dMeanSquareError/dValidTimeVec.size() ) << std::endl ;
-	std::cout << std::endl;
+	oss << "AverageTime is: " << std::setprecision(3) << dAverageTime << std::endl;
+	oss << "MaxTime is: " << dMax  << ", MinTime is: " << dMin<< std::endl ;
+	oss << "MeanSquareError is: " << sqrtl(dMeanSquareError/dValidTimeVec.size() ) << std::endl ;
+	oss << std::endl;
 }
 
 void CTimer::insertTimer( std::string timeString, double timeValue)
@@ -167,4 +167,9 @@ void CTimer::insertTimer( std::string timeString, double timeValue)
 		return;
 	}
 	_timeValueList.insert( std::make_pair(timeString, timeValue) );
+}
+
+void CTimer::clear()
+{
+	_timeValueList.clear();
 }
