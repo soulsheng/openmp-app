@@ -44,10 +44,10 @@
 
 #include "app-MatrixMultVector.h"
 
-#define SIZE_SCALE_M			16
-#define SIZE_SCALE_N			16
-#define SIZE_MATRIX_M		1000
-#define SIZE_MATRIX_N		1000
+#define SIZE_SCALE_M			64
+#define SIZE_SCALE_N			4
+#define SIZE_MATRIX_M		100
+#define SIZE_MATRIX_N		100
 
 /*
    a[m][1]
