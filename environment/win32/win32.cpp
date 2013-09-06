@@ -23,26 +23,47 @@ INT_PTR CALLBACK	About(HWND, UINT, WPARAM, LPARAM);
 CMatrixMultVector mv;
 CTimerOMP  timer1;
 
-std::string			resultString;
+std::vector<std::string>			resultString;
 
-void   printTime()
+void   printTime(bool bMulti)
 {
+	std::string &resultStringItem = *(resultString.end()-1);
+
 	std::ostringstream oss;
 	timer1.printfTimer( oss );
 
-	resultString += oss.str();
-	resultString += "\n";
+	resultStringItem += oss.str();
+	resultStringItem += "\n";
 
 	bool bVerifyResult = mv.verify();
 	if ( bVerifyResult )
-		resultString += "success";
+		resultStringItem += "success";
 	else
-		resultString += "fail";
+		resultStringItem += "fail";
+
+	if (bMulti)
+	{
+		resultStringItem += " multi";
+	} 
+	else
+	{
+		resultStringItem += " single";
+	}
+
+	resultString.push_back( std::string() );
+	timer1.clear();
 }
 
 void reset()
 {
+	for (std::vector<std::string>::iterator itr = resultString.begin();
+		itr != resultString.end(); itr++)
+	{
+		itr->clear();
+	}
 	resultString.clear();
+	resultString.push_back( std::string() );
+	
 	timer1.clear();
 }
 
@@ -50,6 +71,9 @@ void   testInit()
 {
 	mv.mxvInit();
 	timer1.createTimer();
+
+	resultString.push_back( std::string() );
+
 }
 
 void   testRun(bool bMulti)
@@ -65,8 +89,18 @@ void   testRun(bool bMulti)
 	char  text[20];
 	sprintf( text, "%f", fTime );
 	//MessageBox( NULL, text, "时间", 0 );
-	resultString += text;
-	resultString += "\n";
+
+	std::string &resultStringItem = *(resultString.end()-1);
+	if (!bMulti)
+	{
+		resultStringItem += text;
+		resultStringItem += "\n";
+	} 
+	else
+	{
+		resultStringItem += text;
+		resultStringItem += "\n";
+	}
 
 	timer1.insertTimer("时间(s):", fTime);
 }
@@ -203,6 +237,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	HDC hdc;
 	//TCHAR text[ ] = _T("Hello World!");
 	RECT		rect;
+	static bool bMulti;
 
 	switch (message)
 	{
@@ -220,15 +255,17 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			break;
 
 		case ID_SINGLE:
+			bMulti = false;
 			testRun( false );
 			break;
 
 		case ID_MULTI:
+			bMulti = true;
 			testRun( true );
 			break;
 
 		case ID_STAT_TIME:
-			printTime();
+			printTime( bMulti );
 			break;
 
 		case ID_RESET:
@@ -244,7 +281,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		// TODO: 在此添加任意绘图代码...
 		//TextOut(hdc, 0, 0, resultTest.c_str(), resultTest.size() );//  TextOut参考：http://msdn.microsoft.com/en-us/library/dd145133(VS.85).aspx  _tcslen参考：http://www.codeproject.com/Articles/76252/What-are-TCHAR-WCHAR-LPSTR-LPWSTR-LPCTSTR-etc
 		GetClientRect( hWnd, &rect );
-		DrawText(hdc, resultString.c_str(), resultString.size() , &rect ,0);
+		
+		for (int i=0;i<resultString.size(); i++)
+		{
+			rect.left = i*rect.right/resultString.size();
+			DrawText(hdc, resultString[i].c_str(), resultString[i].size() , &rect ,0);
+		}
+
 		EndPaint(hWnd, &ps);
 		break;
 	case WM_DESTROY:

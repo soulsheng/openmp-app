@@ -93,6 +93,7 @@ void CTimerOMP::printfTimer( std::ostringstream &oss )
 	oss << "AverageTime is: " << std::setprecision(3) << dAverageTime << std::endl;
 	oss << "MaxTime is: " << dMax  << ", MinTime is: " << dMin<< std::endl ;
 	oss << "MeanSquareError is: " << sqrtl(dMeanSquareError/dValidTimeVec.size() ) << std::endl ;
+	oss << "MeanSquareErrorRatio is: " << sqrtl(dMeanSquareError/dValidTimeVec.size() )/dAverageTime << std::endl ;
 	oss << std::endl;
 }
 
