@@ -58,11 +58,11 @@ int CMatrixMultVector::mxv(  bool bMulti )
 {
 	m_bMulti = bMulti;
 
-	mxvInit();
+	Init();
 
-	mxvImplement( bMulti );
+	Implement( bMulti );
 
-	mxvUnInit();
+	UnInit();
 
    return(0);
 }
@@ -93,7 +93,7 @@ void CMatrixMultVector::mxvParallel( )
 	} /*-- End of omp parallel for --*/
 }
 
-void CMatrixMultVector::mxvInit()
+void CMatrixMultVector::Init()
 {
 	m = SIZE_MATRIX_M * SIZE_SCALE_M;
 	n = SIZE_MATRIX_N * SIZE_SCALE_N;
@@ -112,7 +112,7 @@ void CMatrixMultVector::mxvInit()
 
 }
 
-void CMatrixMultVector::mxvUnInit()
+void CMatrixMultVector::UnInit()
 {
 	if (a)	{ free(a); a=NULL; }
 	if (b)	{ free(b); b=NULL; }
@@ -120,7 +120,7 @@ void CMatrixMultVector::mxvUnInit()
 	if (aRef)	{ free(aRef); aRef=NULL; }
 }
 
-void CMatrixMultVector::mxvImplement( bool bMulti )
+void CMatrixMultVector::Implement( bool bMulti )
 {
 	m_bMulti = bMulti;
 
@@ -139,7 +139,7 @@ CMatrixMultVector::CMatrixMultVector()
 
 CMatrixMultVector::~CMatrixMultVector()
 {
-	mxvUnInit();
+	UnInit();
 }
 
 bool CMatrixMultVector::verify()

@@ -48,6 +48,9 @@
     <ClInclude Include="..\common\timerOMP.h">
       <Filter>common</Filter>
     </ClInclude>
+    <ClInclude Include="..\common\app-MatrixMultPoint.h">
+      <Filter>common</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -63,6 +66,9 @@
       <Filter>common</Filter>
     </ClCompile>
     <ClCompile Include="..\common\timerOMP.cpp">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\app-MatrixMultPoint.cpp">
       <Filter>common</Filter>
     </ClCompile>
   </ItemGroup>

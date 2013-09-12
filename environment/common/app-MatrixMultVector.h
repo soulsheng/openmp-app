@@ -47,9 +47,9 @@ class CMatrixMultVector
 public:
 
 	int mxv( bool bMulti );
-	void mxvImplement( bool bMulti );
-	void mxvInit( );
-	void mxvUnInit( );
+	void Implement( bool bMulti );
+	void Init( );
+	void UnInit( );
 	bool	verify();
 
 	CMatrixMultVector();

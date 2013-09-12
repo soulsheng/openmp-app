@@ -6,6 +6,7 @@
 #include "../common/timer.h"
 #include "../common/timerOMP.h"
 #include "../common/app-MatrixMultVector.h"
+#include "../common/app-MatrixMultPoint.h"
 
 #define MAX_LOADSTRING 100
 
@@ -20,7 +21,8 @@ BOOL				InitInstance(HINSTANCE, int);
 LRESULT CALLBACK	WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK	About(HWND, UINT, WPARAM, LPARAM);
 
-CMatrixMultVector mv;
+//CMatrixMultVector mv;
+CMatrixMultPoint mv;
 CTimerOMP  timer1;
 
 std::vector<std::string>			resultString;
@@ -69,7 +71,7 @@ void reset()
 
 void   testInit()
 {
-	mv.mxvInit();
+	mv.Init();
 	timer1.createTimer();
 
 	resultString.push_back( std::string() );
@@ -82,7 +84,7 @@ void   testRun(bool bMulti)
 	timer1.resetTimer();
 	timer1.startTimer();
 
-	mv.mxvImplement(bMulti);
+	mv.Implement(bMulti);
 
 	timer1.stopTimer();
 	float fTime = timer1.readTimer();
@@ -107,7 +109,7 @@ void   testRun(bool bMulti)
 
 void   testUnInit()
 {
-	mv.mxvUnInit();
+	mv.UnInit();
 }
 
 int APIENTRY _tWinMain(HINSTANCE hInstance,
