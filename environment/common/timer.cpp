@@ -47,6 +47,8 @@ int CTimer::startTimer(int handle)
         return SDK_FAILURE;
     }
 
+	warmup();
+
 #ifdef _WIN32
     QueryPerformanceCounter((LARGE_INTEGER*)&(_timers[handle]->_start));	
 #else
@@ -173,4 +175,17 @@ void CTimer::insertTimer( std::string timeString, double timeValue)
 void CTimer::clear()
 {
 	_timeValueList.clear();
+}
+
+void CTimer::warmup()
+{
+	volatile int warmingUp = 1;
+#pragma omp parallel for
+	for (int i=1; i<10000000; i++)
+	{
+#pragma omp atomic
+		warmingUp *= i;
+	}
+
+	oldmask = SetThreadAffinityMask(::GetCurrentThread(), 1);
 }

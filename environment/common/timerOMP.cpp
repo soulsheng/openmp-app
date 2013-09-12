@@ -27,6 +27,8 @@ int CTimerOMP::resetTimer(int handle)
 
 int CTimerOMP::startTimer(int handle)
 {
+	warmup();
+
 	_start = omp_get_wtime();
 
     return SDK_SUCCESS;
@@ -35,6 +37,8 @@ int CTimerOMP::startTimer(int handle)
 int CTimerOMP::stopTimer(int handle)
 {
 	_end= omp_get_wtime();
+
+	SetThreadAffinityMask(::GetCurrentThread(), oldmask);
 
     return SDK_SUCCESS;
 }
@@ -109,4 +113,17 @@ void CTimerOMP::insertTimer( std::string timeString, double timeValue)
 void CTimerOMP::clear()
 {
 	_timeValueList.clear();
+}
+
+void CTimerOMP::warmup()
+{
+	volatile int warmingUp = 1;
+#pragma omp parallel for
+	for (int i=1; i<10000000; i++)
+	{
+#pragma omp atomic
+		warmingUp *= i;
+	}
+
+	oldmask = SetThreadAffinityMask(::GetCurrentThread(), 1);
 }

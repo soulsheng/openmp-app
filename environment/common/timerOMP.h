@@ -27,12 +27,13 @@ public:
 protected:
 	void error(const char* errorMsg);
 	void error(std::string errorMsg);
-
+	void warmup();
 private:
 	double _start;	/**< start point ticks*/
 	double _end;	/**< _clocks number of ticks at end*/
 
 	TimerValueList	_timeValueList;
+	DWORD_PTR oldmask;
 
 };
 

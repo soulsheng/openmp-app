@@ -5,16 +5,17 @@
 
 #include "app-MatrixMultPoint.h"
 
-#define SIZE_SCALE_M			16
-#define SIZE_SCALE_N			16
-#define SIZE_MATRIX_M		100
-#define SIZE_MATRIX_N		100
+#define SIZE_SCALE_P			10000
+#define SIZE_SCALE_M			1
+#define SIZE_POINT		100
+#define SIZE_MATRIX		100
 
-/*
-   a[m][1]
-   =
-   b[m][n] *  c[n][1]
-*/
+#define ELEMENT_COUNT_POINT		3
+#define ELEMENT_COUNT_LINE		3
+
+#define ELEMENT_COUNT_MATIRX	(ELEMENT_COUNT_LINE*4)
+
+
 int CMatrixMultPoint::mmp(  bool bMulti )
 {
 	m_bMulti = bMulti;
@@ -30,55 +31,54 @@ int CMatrixMultPoint::mmp(  bool bMulti )
 
 void CMatrixMultPoint::mmpSerial( )
 {
-   int i, j;
+	kernel(m_pIn, m_pOut, m_pMat, m_pIndex);
 
-   for (i=0; i<m; i++)
-   {
-      a[i] = 0.0;
-      for (j=0; j<n; j++)
-         a[i] += b[i*n+j]*c[j];
-   }
 }
 
 
 void CMatrixMultPoint::mmpParallel( )
 {
-	int i, j;
-
-#pragma omp parallel for   private(i,j)
-	for (i=0; i<m; i++)
+#pragma omp parallel for
+	for (int i=0;i<m_nSizePoint;i++)
 	{
-		a[i] = 0.0;
-		for (j=0; j<n; j++)
-			a[i] += b[i*n+j]*c[j];
+		float *pInOne = m_pIn + i*ELEMENT_COUNT_POINT ;
+		float *pOutOne = m_pOut + i*ELEMENT_COUNT_POINT ;
+		float *pMatOne = m_pMat + m_pIndex[i]*ELEMENT_COUNT_MATIRX ;
+
+		kernelElement( pInOne, pOutOne, pMatOne );
 	} /*-- End of omp parallel for --*/
 }
 
 void CMatrixMultPoint::Init()
 {
-	m = SIZE_MATRIX_M * SIZE_SCALE_M;
-	n = SIZE_MATRIX_N * SIZE_SCALE_N;
+	m_nSizePoint = SIZE_POINT * SIZE_SCALE_P;
+	m_nSizeMatrix = SIZE_MATRIX * SIZE_SCALE_M;
 
-	a=(float *)malloc(m*sizeof(float));
-	b=(float *)malloc(m*n*sizeof(float));
-	c=(float *)malloc(n*sizeof(float));
-	aRef=(float *)malloc(m*sizeof(float));
+	m_pIn=(float *)malloc( m_nSizePoint*sizeof(float) *ELEMENT_COUNT_POINT );
+	m_pMat=(float *)malloc( m_nSizeMatrix*sizeof(float) *ELEMENT_COUNT_MATIRX );
+	m_pOut=(float *)malloc( m_nSizePoint*sizeof(float) *ELEMENT_COUNT_POINT );
+	m_pOutRef=(float *)malloc( m_nSizePoint*sizeof(float) *ELEMENT_COUNT_POINT );
+	m_pIndex = (int*)malloc( m_nSizePoint*sizeof(int) );
 
 	int i,j;
-	for (j=0; j<n; j++)
-		c[j] = 2.0;
-	for (i=0; i<m; i++)
-		for (j=0; j<n; j++)
-			b[i*n+j] = i;
+	for (j=0; j<m_nSizePoint*ELEMENT_COUNT_POINT; j++)
+		m_pIn[j] = 2.0;
+	
+	for (i=0; i<m_nSizeMatrix; i++)
+		for (j=0; j<ELEMENT_COUNT_MATIRX; j++)
+			m_pMat[i*ELEMENT_COUNT_MATIRX+j] = i;
 
+	for (j=0; j<m_nSizePoint; j++)
+		m_pIndex[j] = j%ELEMENT_COUNT_MATIRX;
 }
 
 void CMatrixMultPoint::UnInit()
 {
-	if (a)	{ free(a); a=NULL; }
-	if (b)	{ free(b); b=NULL; }
-	if (c)	{ free(c); c=NULL; }
-	if (aRef)	{ free(aRef); aRef=NULL; }
+	if (m_pIn)	{ free(m_pIn); m_pIn=NULL; }
+	if (m_pMat)	{ free(m_pMat); m_pMat=NULL; }
+	if (m_pOut)	{ free(m_pOut); m_pOut=NULL; }
+	if (m_pOutRef){ free(m_pOutRef); m_pOutRef=NULL; }
+	if (m_pIndex)	{ free(m_pIndex); m_pIndex=NULL; }
 }
 
 void CMatrixMultPoint::Implement( bool bMulti )
@@ -93,8 +93,9 @@ void CMatrixMultPoint::Implement( bool bMulti )
 
 CMatrixMultPoint::CMatrixMultPoint()
 {
-	a = b = c = NULL;
-	aRef = NULL;
+	m_pIn = m_pOut = m_pOutRef = NULL;
+	m_pMat = NULL;
+	m_pIndex = NULL;
 	m_bMulti = false;
 }
 
@@ -107,9 +108,9 @@ bool CMatrixMultPoint::verify()
 {
 	mmpRef( );
 
-	for (int i=0; i<m; i++)
+	for (int i=0; i<m_nSizePoint*ELEMENT_COUNT_POINT; i++)
 	{
-		if ( fabs(a[i] - aRef[i]) > 1.0e-3 )
+		if ( fabs(m_pOut[i] - m_pOutRef[i]) > 1.0e-3 )
 		{
 			return false;
 		}
@@ -120,12 +121,40 @@ bool CMatrixMultPoint::verify()
 
 void CMatrixMultPoint::mmpRef()
 {
-	int i, j;
+	kernel(m_pIn, m_pOutRef, m_pMat, m_pIndex);
 
-	for (i=0; i<m; i++)
+}
+
+void CMatrixMultPoint::kernel( float* pIn, float* pOut, float* pMat, int* pIndex )
+{
+	for (int i=0;i<m_nSizePoint;i++)
 	{
-		aRef[i] = 0.0;
-		for (j=0; j<n; j++)
-			aRef[i] += b[i*n+j]*c[j];
+		float *pInOne = pIn + i*ELEMENT_COUNT_POINT ;
+		float *pOutOne = pOut + i*ELEMENT_COUNT_POINT ;
+		float *pMatOne = pMat + pIndex[i]*ELEMENT_COUNT_MATIRX ;
+
+		kernelElement( pInOne, pOutOne, pMatOne );
 	}
+	
+}
+
+void CMatrixMultPoint::kernelElement( float* pIn, float* pOut, float* pMat )
+{
+	pOut[0] =
+		(pMat[0*4+0] * pIn[0] +
+		pMat[1*4+0] * pIn[1] +
+		pMat[2*4+0] * pIn[2] +
+		pMat[3*4+0]) ;
+
+	pOut[1] =
+		(pMat[0*4+1] * pIn[0] +
+		pMat[1*4+1] * pIn[1] +
+		pMat[2*4+1] * pIn[2] +
+		pMat[3*4+1]) ;
+
+	pOut[2] =
+		(pMat[0*4+2] * pIn[0] +
+		pMat[1*4+2] * pIn[1] +
+		pMat[2*4+2] * pIn[2] +
+		pMat[3*4+2]) ;
 }

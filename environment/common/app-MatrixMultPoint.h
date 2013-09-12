@@ -21,10 +21,14 @@ protected:
 
 	void mmpRef( );
 
+	void kernel(float* pIn, float* pOut, float* pMat, int* pIndex);
+	void kernelElement(float* pIn, float* pOut, float* pMat);
+
 private:
-	float *a,*b,*c;
-	float *aRef;
-	int m, n;
+	float *m_pIn,*m_pMat,*m_pOut;
+	float *m_pOutRef;
+	int	*m_pIndex;
+	int m_nSizePoint, m_nSizeMatrix;
 	bool m_bMulti;
 };
 
