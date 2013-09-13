@@ -5,12 +5,12 @@
 
 #include "app-MatrixMultPoint.h"
 
-#define SIZE_SCALE_P			10000
+#define SIZE_SCALE_P			(1<<13)
 #define SIZE_SCALE_M			1
-#define SIZE_POINT		100
-#define SIZE_MATRIX		100
+#define SIZE_POINT		(1<<7)
+#define SIZE_MATRIX		(1<<7)
 
-#define ELEMENT_COUNT_POINT		8
+#define ELEMENT_COUNT_POINT		3
 #define ELEMENT_COUNT_LINE		3
 
 #define ELEMENT_COUNT_MATIRX	(ELEMENT_COUNT_LINE*4)
@@ -45,7 +45,24 @@ void CMatrixMultPoint::mmpParallel( )
 		float *pOutOne = m_pOut + i*ELEMENT_COUNT_POINT ;
 		float *pMatOne = m_pMat + m_pIndex[i]*ELEMENT_COUNT_MATIRX ;
 
-		kernelElement( pInOne, pOutOne, pMatOne );
+		//kernelElement( pInOne, pOutOne, pMatOne );
+		pOutOne[0] =
+			(pMatOne[0*4+0] * pInOne[0] +
+			pMatOne[1*4+0] * pInOne[1] +
+			pMatOne[2*4+0] * pInOne[2] +
+			pMatOne[3*4+0]) ;
+
+		pOutOne[1] =
+			(pMatOne[0*4+1] * pInOne[0] +
+			pMatOne[1*4+1] * pInOne[1] +
+			pMatOne[2*4+1] * pInOne[2] +
+			pMatOne[3*4+1]) ;
+
+		pOutOne[2] =
+			(pMatOne[0*4+2] * pInOne[0] +
+			pMatOne[1*4+2] * pInOne[1] +
+			pMatOne[2*4+2] * pInOne[2] +
+			pMatOne[3*4+2]) ;
 	} /*-- End of omp parallel for --*/
 }
 
@@ -133,7 +150,24 @@ void CMatrixMultPoint::kernel( float* pIn, float* pOut, float* pMat, int* pIndex
 		float *pOutOne = pOut + i*ELEMENT_COUNT_POINT ;
 		float *pMatOne = pMat + pIndex[i]*ELEMENT_COUNT_MATIRX ;
 
-		kernelElement( pInOne, pOutOne, pMatOne );
+		//kernelElement( pInOne, pOutOne, pMatOne );
+		pOutOne[0] =
+			(pMatOne[0*4+0] * pInOne[0] +
+			pMatOne[1*4+0] * pInOne[1] +
+			pMatOne[2*4+0] * pInOne[2] +
+			pMatOne[3*4+0]) ;
+
+		pOutOne[1] =
+			(pMatOne[0*4+1] * pInOne[0] +
+			pMatOne[1*4+1] * pInOne[1] +
+			pMatOne[2*4+1] * pInOne[2] +
+			pMatOne[3*4+1]) ;
+
+		pOutOne[2] =
+			(pMatOne[0*4+2] * pInOne[0] +
+			pMatOne[1*4+2] * pInOne[1] +
+			pMatOne[2*4+2] * pInOne[2] +
+			pMatOne[3*4+2]) ;
 	}
 	
 }
