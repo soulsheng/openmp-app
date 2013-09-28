@@ -3,14 +3,22 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "app-MatrixMultPoint.h"
+#include "app-MatrixMultPoint3D.h"
 
-#define SIZE_SCALE_P			(1<<13)
-#define SIZE_SCALE_M			1
+#define ONE_MATRIX_EACH_POINT	0
+
+#define SIZE_SCALE_P			(1.5 * (1<<9))
 #define SIZE_POINT		(1<<7)
-#define SIZE_MATRIX		(1<<7)
 
-#define ELEMENT_COUNT_POINT		3
+#if !ONE_MATRIX_EACH_POINT
+	#define SIZE_SCALE_M	1
+	#define SIZE_MATRIX		(1<<7)
+#else
+	#define SIZE_SCALE_M	SIZE_SCALE_P
+	#define SIZE_MATRIX		SIZE_POINT
+#endif
+
+#define ELEMENT_COUNT_POINT		4
 #define ELEMENT_COUNT_LINE		3
 
 #define ELEMENT_COUNT_MATIRX	(ELEMENT_COUNT_LINE*4)
@@ -43,8 +51,11 @@ void CMatrixMultPoint3D::mmpParallel( )
 	{
 		float *pInOne = m_pIn + i*ELEMENT_COUNT_POINT ;
 		float *pOutOne = m_pOut + i*ELEMENT_COUNT_POINT ;
+#if ONE_MATRIX_EACH_POINT
+		float *pMatOne = m_pMat + i*ELEMENT_COUNT_MATIRX ;
+#else
 		float *pMatOne = m_pMat + m_pIndex[i]*ELEMENT_COUNT_MATIRX ;
-
+#endif
 		//kernelElement( pInOne, pOutOne, pMatOne );
 		pOutOne[0] =
 			(pMatOne[0*4+0] * pInOne[0] +
@@ -148,8 +159,11 @@ void CMatrixMultPoint3D::kernel( float* pIn, float* pOut, float* pMat, int* pInd
 	{
 		float *pInOne = pIn + i*ELEMENT_COUNT_POINT ;
 		float *pOutOne = pOut + i*ELEMENT_COUNT_POINT ;
-		float *pMatOne = pMat + pIndex[i]*ELEMENT_COUNT_MATIRX ;
-
+#if ONE_MATRIX_EACH_POINT
+		float *pMatOne = m_pMat + i*ELEMENT_COUNT_MATIRX ;
+#else
+		float *pMatOne = m_pMat + m_pIndex[i]*ELEMENT_COUNT_MATIRX ;
+#endif
 		//kernelElement( pInOne, pOutOne, pMatOne );
 		pOutOne[0] =
 			(pMatOne[0*4+0] * pInOne[0] +

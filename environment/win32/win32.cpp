@@ -6,7 +6,7 @@
 #include "../common/timer.h"
 #include "../common/timerOMP.h"
 #include "../common/app-MatrixMultVector.h"
-#include "../common/app-MatrixMultPoint.h"
+#include "../common/app-MatrixMultPoint3D.h"
 
 #define MAX_LOADSTRING 100
 
