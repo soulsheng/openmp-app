@@ -51,6 +51,9 @@
     <ClInclude Include="..\common\app-MatrixMultPoint3D.h">
       <Filter>common</Filter>
     </ClInclude>
+    <ClInclude Include="..\common\app-MatrixMultPoint2D.h">
+      <Filter>common</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -69,6 +72,9 @@
       <Filter>common</Filter>
     </ClCompile>
     <ClCompile Include="..\common\app-MatrixMultPoint3D.cpp">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\app-MatrixMultPoint2D.cpp">
       <Filter>common</Filter>
     </ClCompile>
   </ItemGroup>
