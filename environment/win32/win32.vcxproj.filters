@@ -48,7 +48,7 @@
     <ClInclude Include="..\common\timerOMP.h">
       <Filter>common</Filter>
     </ClInclude>
-    <ClInclude Include="..\common\app-MatrixMultPoint.h">
+    <ClInclude Include="..\common\app-MatrixMultPoint3D.h">
       <Filter>common</Filter>
     </ClInclude>
   </ItemGroup>
@@ -68,7 +68,7 @@
     <ClCompile Include="..\common\timerOMP.cpp">
       <Filter>common</Filter>
     </ClCompile>
-    <ClCompile Include="..\common\app-MatrixMultPoint.cpp">
+    <ClCompile Include="..\common\app-MatrixMultPoint3D.cpp">
       <Filter>common</Filter>
     </ClCompile>
   </ItemGroup>

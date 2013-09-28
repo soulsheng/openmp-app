@@ -79,7 +79,7 @@
     <None Include="win32.ico" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\common\app-MatrixMultPoint.h" />
+    <ClInclude Include="..\common\app-MatrixMultPoint3D.h" />
     <ClInclude Include="..\common\app-MatrixMultVector.h" />
     <ClInclude Include="..\common\timer.h" />
     <ClInclude Include="..\common\timerOMP.h" />
@@ -89,7 +89,7 @@
     <ClInclude Include="win32.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\common\app-MatrixMultPoint.cpp" />
+    <ClCompile Include="..\common\app-MatrixMultPoint3D.cpp" />
     <ClCompile Include="..\common\app-MatrixMultVector.cpp" />
     <ClCompile Include="..\common\timer.cpp" />
     <ClCompile Include="..\common\timerOMP.cpp" />
