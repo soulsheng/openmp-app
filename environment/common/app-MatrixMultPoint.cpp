@@ -16,7 +16,7 @@
 #define ELEMENT_COUNT_MATIRX	(ELEMENT_COUNT_LINE*4)
 
 
-int CMatrixMultPoint::mmp(  bool bMulti )
+int CMatrixMultPoint3D::mmp(  bool bMulti )
 {
 	m_bMulti = bMulti;
 
@@ -29,14 +29,14 @@ int CMatrixMultPoint::mmp(  bool bMulti )
    return(0);
 }
 
-void CMatrixMultPoint::mmpSerial( )
+void CMatrixMultPoint3D::mmpSerial( )
 {
 	kernel(m_pIn, m_pOut, m_pMat, m_pIndex);
 
 }
 
 
-void CMatrixMultPoint::mmpParallel( )
+void CMatrixMultPoint3D::mmpParallel( )
 {
 #pragma omp parallel for
 	for (int i=0;i<m_nSizePoint;i++)
@@ -66,7 +66,7 @@ void CMatrixMultPoint::mmpParallel( )
 	} /*-- End of omp parallel for --*/
 }
 
-void CMatrixMultPoint::Init()
+void CMatrixMultPoint3D::Init()
 {
 	m_nSizePoint = SIZE_POINT * SIZE_SCALE_P;
 	m_nSizeMatrix = SIZE_MATRIX * SIZE_SCALE_M;
@@ -89,7 +89,7 @@ void CMatrixMultPoint::Init()
 		m_pIndex[j] = j%ELEMENT_COUNT_MATIRX;
 }
 
-void CMatrixMultPoint::UnInit()
+void CMatrixMultPoint3D::UnInit()
 {
 	if (m_pIn)	{ free(m_pIn); m_pIn=NULL; }
 	if (m_pMat)	{ free(m_pMat); m_pMat=NULL; }
@@ -98,7 +98,7 @@ void CMatrixMultPoint::UnInit()
 	if (m_pIndex)	{ free(m_pIndex); m_pIndex=NULL; }
 }
 
-void CMatrixMultPoint::Implement( bool bMulti )
+void CMatrixMultPoint3D::Implement( bool bMulti )
 {
 	m_bMulti = bMulti;
 
@@ -108,7 +108,7 @@ void CMatrixMultPoint::Implement( bool bMulti )
 		mmpSerial( );
 }
 
-CMatrixMultPoint::CMatrixMultPoint()
+CMatrixMultPoint3D::CMatrixMultPoint3D()
 {
 	m_pIn = m_pOut = m_pOutRef = NULL;
 	m_pMat = NULL;
@@ -116,12 +116,12 @@ CMatrixMultPoint::CMatrixMultPoint()
 	m_bMulti = false;
 }
 
-CMatrixMultPoint::~CMatrixMultPoint()
+CMatrixMultPoint3D::~CMatrixMultPoint3D()
 {
 	UnInit();
 }
 
-bool CMatrixMultPoint::verify()
+bool CMatrixMultPoint3D::verify()
 {
 	mmpRef( );
 
@@ -136,13 +136,13 @@ bool CMatrixMultPoint::verify()
 	return true;
 }
 
-void CMatrixMultPoint::mmpRef()
+void CMatrixMultPoint3D::mmpRef()
 {
 	kernel(m_pIn, m_pOutRef, m_pMat, m_pIndex);
 
 }
 
-void CMatrixMultPoint::kernel( float* pIn, float* pOut, float* pMat, int* pIndex )
+void CMatrixMultPoint3D::kernel( float* pIn, float* pOut, float* pMat, int* pIndex )
 {
 	for (int i=0;i<m_nSizePoint;i++)
 	{
@@ -172,7 +172,7 @@ void CMatrixMultPoint::kernel( float* pIn, float* pOut, float* pMat, int* pIndex
 	
 }
 
-void CMatrixMultPoint::kernelElement( float* pIn, float* pOut, float* pMat )
+void CMatrixMultPoint3D::kernelElement( float* pIn, float* pOut, float* pMat )
 {
 	pOut[0] =
 		(pMat[0*4+0] * pIn[0] +

@@ -22,7 +22,7 @@ LRESULT CALLBACK	WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK	About(HWND, UINT, WPARAM, LPARAM);
 
 //CMatrixMultVector mv;
-CMatrixMultPoint mv;
+CMatrixMultPoint3D mv;
 CTimerOMP  timer1;
 
 std::vector<std::string>			resultString;

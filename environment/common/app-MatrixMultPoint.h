@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-class CMatrixMultPoint
+class CMatrixMultPoint3D
 {
 public:
 
@@ -12,8 +12,8 @@ public:
 	void UnInit( );
 	bool	verify();
 
-	CMatrixMultPoint();
-	~CMatrixMultPoint();
+	CMatrixMultPoint3D();
+	~CMatrixMultPoint3D();
 protected:
 	void mmpSerial( );
 
