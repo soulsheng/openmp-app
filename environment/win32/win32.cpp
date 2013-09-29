@@ -241,6 +241,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	//TCHAR text[ ] = _T("Hello World!");
 	RECT		rect;
 	static bool bMulti;
+	int* pImg = NULL;
 
 	switch (message)
 	{
@@ -275,6 +276,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			reset();
 			break;
 
+		case ID_ACCUMULATE:
+			mv.accumulate();
+			break;
+
 		default:
 			return DefWindowProc(hWnd, message, wParam, lParam);
 		}
@@ -283,14 +288,56 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		hdc = BeginPaint(hWnd, &ps);
 		// TODO: 在此添加任意绘图代码...
 		//TextOut(hdc, 0, 0, resultTest.c_str(), resultTest.size() );//  TextOut参考：http://msdn.microsoft.com/en-us/library/dd145133(VS.85).aspx  _tcslen参考：http://www.codeproject.com/Articles/76252/What-are-TCHAR-WCHAR-LPSTR-LPWSTR-LPCTSTR-etc
+#if 0
 		GetClientRect( hWnd, &rect );
-		
 		for (int i=0;i<resultString.size(); i++)
 		{
 			rect.left = i*rect.right/resultString.size();
 			DrawText(hdc, resultString[i].c_str(), resultString[i].size() , &rect ,0);
 		}
+#else
 
+#if 0
+		MoveToEx( hdc, 0, 0, NULL );
+
+		LineTo(hdc, 100, 100 );
+#else
+		pImg = mv.getOutput();
+		if (pImg)
+		{
+			int nStride = 4;
+			int nSample = 4;
+			int xOffset = SIZE_HEIGHT ;
+			int yOffset = xOffset/nSample;
+
+			for ( int i=0;i<SIZE_HEIGHT/nSample;i+= nStride )
+			{
+				for (int j=0;j<(SIZE_WIDTH-nStride)/nSample;j+= nStride )
+				{
+					int * pCurrent = pImg + ((i*SIZE_WIDTH)+j)*ELEMENT_COUNT_POINT;
+					int px1 = *( pCurrent );
+					int py1 = *( ++pCurrent );
+					MoveToEx( hdc, px1+xOffset, py1+yOffset, NULL );
+
+					pCurrent = pImg + ((i*SIZE_WIDTH)+j+nStride)*ELEMENT_COUNT_POINT;
+					int px2 = *( pCurrent );
+					int py2 = *( ++pCurrent );
+					LineTo(hdc, px2+xOffset, py2+yOffset );
+					
+					MoveToEx( hdc, px1+xOffset, py1+yOffset, NULL );
+
+					pCurrent = pImg + (((i+nStride)*SIZE_WIDTH)+j)*ELEMENT_COUNT_POINT;
+					int px3 = *( pCurrent );
+					int py3 = *( ++pCurrent );
+					LineTo(hdc, px3+xOffset, py3+yOffset );
+				}
+			}
+
+
+		}
+#endif
+		
+#endif
 		EndPaint(hWnd, &ps);
 		break;
 	case WM_DESTROY:

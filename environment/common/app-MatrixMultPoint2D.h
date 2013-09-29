@@ -31,6 +31,10 @@ public:
 	void UnInit( );
 	bool	verify();
 
+	int* getOutput( );
+
+	void	accumulate();
+
 	CMatrixMultPoint2D();
 	~CMatrixMultPoint2D();
 protected:
@@ -40,11 +44,11 @@ protected:
 
 	void mmpRef( );
 
-	void kernel(int (*pIn)[SIZE_WIDTH][ELEMENT_COUNT_POINT], int (*pOut)[SIZE_WIDTH][ELEMENT_COUNT_POINT], float(*pMat)[ELEMENT_LENGTH_LINE], int (*pIndex)[SIZE_WIDTH]);
+	void kernel(int (*imgIn)[SIZE_WIDTH][ELEMENT_COUNT_POINT], int (*imgOut)[SIZE_WIDTH][ELEMENT_COUNT_POINT], float(*pMat)[ELEMENT_LENGTH_LINE], int (*pIndex)[SIZE_WIDTH]);
 	void kernelElement(int* pIn, int* pOut, float* pMat);
 
 private:
-	int (*imgIn)[SIZE_WIDTH][ELEMENT_COUNT_POINT],(*m_pOutRef)[SIZE_WIDTH][ELEMENT_COUNT_POINT],(*imgOut)[SIZE_WIDTH][ELEMENT_COUNT_POINT];
+	int (*m_imgIn)[SIZE_WIDTH][ELEMENT_COUNT_POINT],(*m_pOutRef)[SIZE_WIDTH][ELEMENT_COUNT_POINT],(*m_imgOut)[SIZE_WIDTH][ELEMENT_COUNT_POINT];
 	float (*m_pMat)[ELEMENT_COUNT_LINE][ELEMENT_LENGTH_LINE];
 	int	(*m_pIndex)[SIZE_WIDTH];
 	int m_nSizePoint, m_nSizeMatrix;
