@@ -77,8 +77,10 @@ void CMatrixMultPoint2D::Init()
 
 	for (int i=0;i<SIZE_HEIGHT;i++)
 		for (int j=0;j<SIZE_WIDTH;j++)
-			for (int k=0;k<ELEMENT_COUNT_POINT;k++)
-				imgIn[i][j][k] = ((i*SIZE_WIDTH + j)*ELEMENT_COUNT_POINT ) +k;
+		{
+			imgIn[i][i][0] = i;
+			imgIn[i][i][0] = j;
+		}
 	
 	for (int i=0; i<m_nSizeMatrix; i++)
 		for (int j=0;j<ELEMENT_COUNT_LINE;j++)
