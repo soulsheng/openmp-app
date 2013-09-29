@@ -94,10 +94,10 @@ void CMatrixMultPoint3D::Init()
 	
 	for (i=0; i<m_nSizeMatrix; i++)
 		for (j=0; j<ELEMENT_COUNT_MATIRX; j++)
-			m_pMat[i*ELEMENT_COUNT_MATIRX+j] = i;
+			m_pMat[i*ELEMENT_COUNT_MATIRX+j] = j/(float)ELEMENT_COUNT_MATIRX;
 
 	for (j=0; j<m_nSizePoint; j++)
-		m_pIndex[j] = j%ELEMENT_COUNT_MATIRX;
+		m_pIndex[j] = j%m_nSizeMatrix;
 }
 
 void CMatrixMultPoint3D::UnInit()

@@ -21,12 +21,12 @@ protected:
 
 	void mmpRef( );
 
-	void kernel(float* pIn, float* pOut, float* pMat, int* pIndex);
-	void kernelElement(float* pIn, float* pOut, float* pMat);
+	void kernel(int* pIn, int* pOut, float* pMat, int* pIndex);
+	void kernelElement(int* pIn, int* pOut, float* pMat);
 
 private:
-	float *m_pIn,*m_pMat,*m_pOut;
-	float *m_pOutRef;
+	int *m_pIn,*m_pOutRef,*m_pOut;
+	float *m_pMat;
 	int	*m_pIndex;
 	int m_nSizePoint, m_nSizeMatrix;
 	bool m_bMulti;
