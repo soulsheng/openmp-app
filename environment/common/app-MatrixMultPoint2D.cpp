@@ -79,15 +79,40 @@ void CMatrixMultPoint2D::Init()
 		for (int j=0;j<SIZE_WIDTH;j++)
 			for (int k=0;k<ELEMENT_COUNT_POINT;k++)
 				imgIn[i][j][k] = ((i*SIZE_WIDTH + j)*ELEMENT_COUNT_POINT ) +k;
-
+	
 	for (int i=0; i<m_nSizeMatrix; i++)
 		for (int j=0;j<ELEMENT_COUNT_LINE;j++)
 			for (int k=0;k<ELEMENT_LENGTH_LINE;k++)
-				m_pMat[i][j][k] = (j*ELEMENT_COUNT_LINE + k)/(float)(ELEMENT_LENGTH_LINE*ELEMENT_COUNT_LINE) ;
+				m_pMat[i][j][k] = 0;//(j*ELEMENT_COUNT_LINE + k)/(float)(ELEMENT_LENGTH_LINE*ELEMENT_COUNT_LINE) ;
 
 	for (int i=0;i<SIZE_HEIGHT;i++)
 		for (int j=0;j<SIZE_WIDTH;j++)
 			m_pIndex[i][j] = j%m_nSizeMatrix;
+
+	float theta = 90;
+	float scale = 2;
+#define PI 3.1415927
+	float mr[3][3] = { {1, 0, 0}, {0, 1, 0}, {0, 0, 1} } ; // 旋转变换矩阵初始化
+	float ms[3][3] = { {1, 0, 0}, {0, 1, 0}, {0, 0, 1} } ; // 缩放变换矩阵初始化
+	float (*m)[3] = m_pMat[0] ;	 // 统一变换矩阵初始化
+
+	// 旋转矩阵
+	float rad = theta /180 * PI ;
+	mr[0][0] = cos( rad ) ;
+	mr[0][1] = sin( rad ) ;
+	mr[1][0] = -sin( rad ) ;
+	mr[1][1] = cos( rad ) ;
+
+	// 缩放矩阵
+	ms[0][0] = scale ;
+	ms[1][1] = scale ;
+
+	// 获得统一变换矩阵
+	for( int i = 0 ; i < 3 ; i++ )
+		for( int j = 0 ; j < 3 ; j++ )
+			for( int k = 0 ; k < 3 ; k++ )
+				m[i][j] += ms[i][k] * mr[k][j];
+
 #endif
 }
 
