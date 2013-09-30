@@ -36,8 +36,8 @@ void CMatrixMultPoint2D::mmpParallel( )
 	{
 		for (int j=0;j<SIZE_WIDTH;j++)
 		{
-			int x =	m_imgIn[i][j][0] ;
-			int y =	m_imgIn[i][j][1] ;
+			float x =	m_imgIn[i][j][0] ;
+			float y =	m_imgIn[i][j][1] ;
 
 			m_imgOut[i][j][0] = x * m[0][0] + y * m[1][0] + m[2][0] ;
 			m_imgOut[i][j][1] = x * m[0][1] + y * m[1][1] + m[2][1] ;
@@ -67,9 +67,9 @@ void CMatrixMultPoint2D::Init()
 	for (j=0; j<m_nSizePoint; j++)
 		m_pIndex[j] = j%m_nSizeMatrix;
 #else
-	m_imgIn = new int[SIZE_HEIGHT][SIZE_WIDTH][ELEMENT_COUNT_POINT];
-	m_imgOut = new int[SIZE_HEIGHT][SIZE_WIDTH][ELEMENT_COUNT_POINT];
-	m_pOutRef = new int[SIZE_HEIGHT][SIZE_WIDTH][ELEMENT_COUNT_POINT];
+	m_imgIn = new float[SIZE_HEIGHT][SIZE_WIDTH][ELEMENT_COUNT_POINT];
+	m_imgOut = new float[SIZE_HEIGHT][SIZE_WIDTH][ELEMENT_COUNT_POINT];
+	m_pOutRef = new float[SIZE_HEIGHT][SIZE_WIDTH][ELEMENT_COUNT_POINT];
 	
 	m_pIndex = new int[SIZE_HEIGHT][SIZE_WIDTH];
 	
@@ -174,14 +174,14 @@ void CMatrixMultPoint2D::mmpRef()
 
 }
 
-void CMatrixMultPoint2D::kernel( int (*imgIn)[SIZE_WIDTH][ELEMENT_COUNT_POINT], int (*imgOut)[SIZE_WIDTH][ELEMENT_COUNT_POINT], float(*m)[ELEMENT_LENGTH_LINE], int (*pIndex)[SIZE_WIDTH] )
+void CMatrixMultPoint2D::kernel( float (*imgIn)[SIZE_WIDTH][ELEMENT_COUNT_POINT], float (*imgOut)[SIZE_WIDTH][ELEMENT_COUNT_POINT], float(*m)[ELEMENT_LENGTH_LINE], int (*pIndex)[SIZE_WIDTH] )
 {
 	for (int i=0;i<SIZE_HEIGHT;i++)
 	{
 		for (int j=0;j<SIZE_WIDTH;j++)
 		{
-			int x =	imgIn[i][j][0] ;
-			int y =	imgIn[i][j][1] ;
+			float x =	imgIn[i][j][0] ;
+			float y =	imgIn[i][j][1] ;
 
 			imgOut[i][j][0] = x * m[0][0] + y * m[1][0] + m[2][0] ;
 			imgOut[i][j][1] = x * m[0][1] + y * m[1][1] + m[2][1] ;
@@ -191,7 +191,7 @@ void CMatrixMultPoint2D::kernel( int (*imgIn)[SIZE_WIDTH][ELEMENT_COUNT_POINT], 
 	
 }
 
-void CMatrixMultPoint2D::kernelElement( int* pIn, int* pOut, float* pMat )
+void CMatrixMultPoint2D::kernelElement( float* pIn, float* pOut, float* pMat )
 {
 	pOut[0] =
 		pMat[0*ELEMENT_LENGTH_LINE+0] * pIn[0] +
@@ -204,7 +204,7 @@ void CMatrixMultPoint2D::kernelElement( int* pIn, int* pOut, float* pMat )
 		pMat[2*ELEMENT_LENGTH_LINE+1] ;
 }
 
-int* CMatrixMultPoint2D::getOutput()
+float* CMatrixMultPoint2D::getOutput()
 {	
 	return &m_imgOut[0][0][0]; 
 }

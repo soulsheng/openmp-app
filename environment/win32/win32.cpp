@@ -241,7 +241,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	//TCHAR text[ ] = _T("Hello World!");
 	RECT		rect;
 	static bool bMulti;
-	int* pImg = NULL;
+	float* pImg = NULL;
 
 	switch (message)
 	{
@@ -309,21 +309,21 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			{
 				for (int j=0;j<(SIZE_WIDTH-nStride)/nSample;j+= nStride )
 				{
-					int * pCurrent = pImg + ((i*SIZE_WIDTH)+j)*ELEMENT_COUNT_POINT;
-					int px1 = *( pCurrent );
-					int py1 = *( ++pCurrent );
+					float * pCurrent = pImg + ((i*SIZE_WIDTH)+j)*ELEMENT_COUNT_POINT;
+					int px1 = (int)*( pCurrent );
+					int py1 = (int)*( ++pCurrent );
 					MoveToEx( hdc, px1+xOffset, py1+yOffset, NULL );
 
 					pCurrent = pImg + ((i*SIZE_WIDTH)+j+nStride)*ELEMENT_COUNT_POINT;
-					int px2 = *( pCurrent );
-					int py2 = *( ++pCurrent );
+					int px2 = (int)*( pCurrent );
+					int py2 = (int)*( ++pCurrent );
 					LineTo(hdc, px2+xOffset, py2+yOffset );
 					
-					MoveToEx( hdc, px1+xOffset, py1+yOffset, NULL );
+					MoveToEx( hdc, (int)px1+xOffset, (int)py1+yOffset, NULL );
 
 					pCurrent = pImg + (((i+nStride)*SIZE_WIDTH)+j)*ELEMENT_COUNT_POINT;
-					int px3 = *( pCurrent );
-					int py3 = *( ++pCurrent );
+					int px3 = (int)*( pCurrent );
+					int py3 = (int)*( ++pCurrent );
 					LineTo(hdc, px3+xOffset, py3+yOffset );
 				}
 			}
