@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define OPTIMIZE_SERIAL			0 // 串行优化
 #define OUTPUT_TEXT_OR_IMAGE	0 // 1文本 ；0图形
 
 #define ONE_MATRIX_EACH_POINT	0
