@@ -288,7 +288,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		hdc = BeginPaint(hWnd, &ps);
 		// TODO: 在此添加任意绘图代码...
 		//TextOut(hdc, 0, 0, resultTest.c_str(), resultTest.size() );//  TextOut参考：http://msdn.microsoft.com/en-us/library/dd145133(VS.85).aspx  _tcslen参考：http://www.codeproject.com/Articles/76252/What-are-TCHAR-WCHAR-LPSTR-LPWSTR-LPCTSTR-etc
-#if 0
+#if OUTPUT_TEXT_OR_IMAGE
 		GetClientRect( hWnd, &rect );
 		for (int i=0;i<resultString.size(); i++)
 		{
@@ -297,11 +297,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		}
 #else
 
-#if 0
-		MoveToEx( hdc, 0, 0, NULL );
-
-		LineTo(hdc, 100, 100 );
-#else
 		pImg = mv.getOutput();
 		if (pImg)
 		{
@@ -335,7 +330,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 
 		}
-#endif
 		
 #endif
 		EndPaint(hWnd, &ps);

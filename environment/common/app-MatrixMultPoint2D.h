@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define OUTPUT_TEXT_OR_IMAGE	1
+
 #define ONE_MATRIX_EACH_POINT	0
 
 #define SIZE_WIDTH			(1<<10)
