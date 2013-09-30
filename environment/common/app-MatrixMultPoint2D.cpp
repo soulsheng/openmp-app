@@ -54,22 +54,22 @@ void CMatrixMultPoint2D::mmpParallel( )
 	float (*imgOut)[SIZE_WIDTH][ELEMENT_COUNT_POINT] ;
 	imgOut = m_imgOut;
 
-#if MULTI_POINT_PER_TIME	
-#pragma omp parallel for
+
+#pragma omp parallel for 
 	for (int i=0;i<SIZE_HEIGHT;i++)
 	{
+#if 1
 		kernel(m_imgIn, m_imgOut, m, i);
-
-	}
-
 #else
-#pragma omp parallel for
-	for (int i=0;i<SIZE_HEIGHT;i++)
-	{
-		kernel(m_imgIn, m_imgOut, m, i);
+		for( int j = 0; j < SIZE_WIDTH; j++ )	{
+			m_imgOut[i][j][0] 
+			= m_imgIn[i][j][0]*m[0][0] + m_imgIn[i][j][1]*m[1][0] + m[2][0];
+			m_imgOut[i][j][1] 
+			= m_imgIn[i][j][0]*m[0][1] + m_imgIn[i][j][1]*m[1][1] + m[2][1];
+		}
+#endif
 	}
 
-#endif
 }
 
 void CMatrixMultPoint2D::Init()
@@ -203,7 +203,7 @@ void CMatrixMultPoint2D::mmpRef()
 
 void CMatrixMultPoint2D::kernel( float imgIn[][SIZE_WIDTH][ELEMENT_COUNT_POINT], float imgOut[][SIZE_WIDTH][ELEMENT_COUNT_POINT], float m[][ELEMENT_COUNT_LINE], int i )
 {
-	for (int j=0;j<SIZE_WIDTH/SIZE_POINT_PER_TIME;j++)
+	for (int j=0;j<SIZE_WIDTH ;j+=SIZE_POINT_PER_TIME)
 	{
 #if OPTIMIZE_SERIAL
 		for (int k=0; k< SIZE_POINT_PER_TIME ; k++ )
@@ -215,8 +215,12 @@ void CMatrixMultPoint2D::kernel( float imgIn[][SIZE_WIDTH][ELEMENT_COUNT_POINT],
 			imgOut[i][j+k][1] = x * m[0][1] + y * m[1][1] + m[2][1] ;
 		}
 #else
-		imgOut[i][j][0] = imgIn[i][j][0] * m[0][0] + imgIn[i][j][1] * m[1][0] + m[2][0] ;
-		imgOut[i][j][1] = imgIn[i][j][0] * m[0][1] + imgIn[i][j][1] * m[1][1] + m[2][1] ;
+		int k=0;
+		for (int k=0; k< SIZE_POINT_PER_TIME ; k++ )
+		{
+			imgOut[i][j+k][0] = imgIn[i][j+k][0] * m[0][0] + imgIn[i][j+k][1] * m[1][0] + m[2][0] ;
+			imgOut[i][j+k][1] = imgIn[i][j+k][0] * m[0][1] + imgIn[i][j+k][1] * m[1][1] + m[2][1] ;
+		}
 #endif
 	}
 

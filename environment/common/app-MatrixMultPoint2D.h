@@ -2,8 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define MULTI_POINT_PER_TIME	0
-#define SIZE_POINT_PER_TIME		1
+#define SIZE_POINT_PER_TIME		4
 
 #define OPTIMIZE_SERIAL			0 // 串行优化
 #define OUTPUT_TEXT_OR_IMAGE	1 // 1文本 ；0图形
