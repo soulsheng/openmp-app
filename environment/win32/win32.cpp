@@ -261,23 +261,28 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		case ID_SINGLE:
 			bMulti = false;
 			testRun( false );
+			InvalidateRect(hWnd, NULL, TRUE);
 			break;
 
 		case ID_MULTI:
 			bMulti = true;
 			testRun( true );
+			InvalidateRect(hWnd, NULL, TRUE);
 			break;
 
 		case ID_STAT_TIME:
 			printTime( bMulti );
+			InvalidateRect(hWnd, NULL, TRUE);
 			break;
 
 		case ID_RESET:
 			reset();
+			InvalidateRect(hWnd, NULL, TRUE);
 			break;
 
 		case ID_ACCUMULATE:
 			mv.accumulate();
+			InvalidateRect(hWnd, NULL, TRUE);
 			break;
 
 		default:
@@ -300,30 +305,30 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		pImg = mv.getOutput();
 		if (pImg)
 		{
-			int nStride = 4;
-			int nSample = 4;
-			int xOffset = SIZE_HEIGHT ;
-			int yOffset = xOffset/nSample;
+			int nStride = SIZE_WIDTH/ (1<<7);
 
-			for ( int i=0;i<SIZE_HEIGHT/nSample;i+= nStride )
+			int xOffset = 1000 ;
+			int yOffset = xOffset/2;
+			int nScale = SIZE_WIDTH/ (1<<8);
+			for ( int i=0;i<SIZE_HEIGHT-nStride;i+= nStride )
 			{
-				for (int j=0;j<(SIZE_WIDTH-nStride)/nSample;j+= nStride )
+				for (int j=0;j<SIZE_WIDTH-nStride;j+= nStride )
 				{
 					float * pCurrent = pImg + ((i*SIZE_WIDTH)+j)*ELEMENT_COUNT_POINT;
-					int px1 = (int)*( pCurrent );
-					int py1 = (int)*( ++pCurrent );
+					int px1 = (int)*( pCurrent )/nScale;
+					int py1 = (int)*( ++pCurrent )/nScale;
 					MoveToEx( hdc, px1+xOffset, py1+yOffset, NULL );
 
 					pCurrent = pImg + ((i*SIZE_WIDTH)+j+nStride)*ELEMENT_COUNT_POINT;
-					int px2 = (int)*( pCurrent );
-					int py2 = (int)*( ++pCurrent );
+					int px2 = (int)*( pCurrent )/nScale;
+					int py2 = (int)*( ++pCurrent )/nScale;
 					LineTo(hdc, px2+xOffset, py2+yOffset );
 					
 					MoveToEx( hdc, (int)px1+xOffset, (int)py1+yOffset, NULL );
 
 					pCurrent = pImg + (((i+nStride)*SIZE_WIDTH)+j)*ELEMENT_COUNT_POINT;
-					int px3 = (int)*( pCurrent );
-					int py3 = (int)*( ++pCurrent );
+					int px3 = (int)*( pCurrent )/nScale;
+					int py3 = (int)*( ++pCurrent )/nScale;
 					LineTo(hdc, px3+xOffset, py3+yOffset );
 				}
 			}

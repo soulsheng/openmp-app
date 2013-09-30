@@ -10,7 +10,7 @@
 
 #define ONE_MATRIX_EACH_POINT	0
 
-#define SIZE_WIDTH			(1<<13)
+#define SIZE_WIDTH			(1<<10)
 #define SIZE_HEIGHT		(SIZE_WIDTH)
 
 #if !ONE_MATRIX_EACH_POINT

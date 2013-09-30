@@ -122,7 +122,7 @@ void CMatrixMultPoint2D::Init()
 			m_pIndex[i][j] = j%m_nSizeMatrix;
 
 	float theta = 15;
-	float scale = 1.1;
+	float scale = 1.05;
 #define PI 3.1415927
 	float mr[3][3] = { {1, 0, 0}, {0, 1, 0}, {0, 0, 1} } ; // 旋转变换矩阵初始化
 	float ms[3][3] = { {1, 0, 0}, {0, 1, 0}, {0, 0, 1} } ; // 缩放变换矩阵初始化
