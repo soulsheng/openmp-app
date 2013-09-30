@@ -3,12 +3,12 @@
 #include <stdlib.h>
 
 #define OPTIMIZE_SERIAL			0 // 串行优化
-#define OUTPUT_TEXT_OR_IMAGE	0 // 1文本 ；0图形
+#define OUTPUT_TEXT_OR_IMAGE	1 // 1文本 ；0图形
 
 #define ONE_MATRIX_EACH_POINT	0
 
-#define SIZE_WIDTH			(1<<10)
-#define SIZE_HEIGHT		(1<<10)
+#define SIZE_WIDTH			(1<<13)
+#define SIZE_HEIGHT		(SIZE_WIDTH)
 
 #if !ONE_MATRIX_EACH_POINT
 #define SIZE_SCALE_M	1

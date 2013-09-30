@@ -74,7 +74,7 @@ void CMatrixMultPoint2D::Init()
 #else
 	m_imgIn = new float[SIZE_HEIGHT][SIZE_WIDTH][ELEMENT_COUNT_POINT];
 	m_imgOut = new float[SIZE_HEIGHT][SIZE_WIDTH][ELEMENT_COUNT_POINT];
-	m_pOutRef = new float[SIZE_HEIGHT][SIZE_WIDTH][ELEMENT_COUNT_POINT];
+	//m_pOutRef = new float[SIZE_HEIGHT][SIZE_WIDTH][ELEMENT_COUNT_POINT];
 	
 	m_pIndex = new int[SIZE_HEIGHT][SIZE_WIDTH];
 	
@@ -164,7 +164,7 @@ bool CMatrixMultPoint2D::verify()
 
 	for (int i=0; i<m_nSizePoint*ELEMENT_COUNT_POINT; i++)
 	{
-		if ( ABS(m_imgOut[i] , m_pOutRef[i]) > 1 )
+		//if ( ABS(m_imgOut[i] , m_pOutRef[i]) > 1 )
 		{
 			return false;
 		}
@@ -175,7 +175,7 @@ bool CMatrixMultPoint2D::verify()
 
 void CMatrixMultPoint2D::mmpRef()
 {
-	kernel(m_imgIn, m_pOutRef, m_pMat[0], m_pIndex);
+	//kernel(m_imgIn, m_pOutRef, m_pMat[0], m_pIndex);
 
 }
 
