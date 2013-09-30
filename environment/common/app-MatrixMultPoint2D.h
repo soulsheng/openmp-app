@@ -2,6 +2,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define MULTI_POINT_PER_TIME	0
+#define SIZE_POINT_PER_TIME		1
+
 #define OPTIMIZE_SERIAL			0 // 串行优化
 #define OUTPUT_TEXT_OR_IMAGE	1 // 1文本 ；0图形
 
@@ -47,7 +50,7 @@ protected:
 
 	void mmpRef( );
 
-	void kernel(float (*imgIn)[SIZE_WIDTH][ELEMENT_COUNT_POINT], float (*imgOut)[SIZE_WIDTH][ELEMENT_COUNT_POINT], float(*pMat)[ELEMENT_LENGTH_LINE], int (*pIndex)[SIZE_WIDTH]);
+	void kernel(  float imgIn[][SIZE_WIDTH][ELEMENT_COUNT_POINT], float imgOut[][SIZE_WIDTH][ELEMENT_COUNT_POINT], float m[][ELEMENT_COUNT_LINE], int i );
 	void kernelElement(float* pIn, float* pOut, float* pMat);
 
 private:
