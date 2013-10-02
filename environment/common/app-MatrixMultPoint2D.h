@@ -2,9 +2,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define SIZE_POINT_PER_TIME		4
+#define SIZE_POINT_PER_TIME		2
 
-#define OPTIMIZE_SERIAL			0 // 串行优化
+#define OPTIMIZE_SERIAL			1 // 串行优化
 #define OUTPUT_TEXT_OR_IMAGE	1 // 1文本 ；0图形
 
 #define ONE_MATRIX_EACH_POINT	0
@@ -21,8 +21,8 @@
 #endif
 
 #define ELEMENT_COUNT_POINT		2
-#define ELEMENT_COUNT_LINE		3
-#define ELEMENT_LENGTH_LINE		3
+#define ELEMENT_COUNT_LINE		4
+#define ELEMENT_LENGTH_LINE		4
 
 #define ELEMENT_COUNT_MATIRX	(ELEMENT_COUNT_LINE*ELEMENT_LENGTH_LINE)
 

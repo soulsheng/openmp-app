@@ -124,9 +124,9 @@ void CMatrixMultPoint2D::Init()
 	float theta = 15;
 	float scale = 1.05;
 #define PI 3.1415927
-	float mr[3][3] = { {1, 0, 0}, {0, 1, 0}, {0, 0, 1} } ; // 旋转变换矩阵初始化
-	float ms[3][3] = { {1, 0, 0}, {0, 1, 0}, {0, 0, 1} } ; // 缩放变换矩阵初始化
-	float (*m)[3] = m_pMat[0] ;	 // 统一变换矩阵初始化
+	float mr[ELEMENT_LENGTH_LINE][ELEMENT_LENGTH_LINE] = { {1, 0, 0}, {0, 1, 0}, {0, 0, 1} } ; // 旋转变换矩阵初始化
+	float ms[ELEMENT_LENGTH_LINE][ELEMENT_LENGTH_LINE] = { {1, 0, 0}, {0, 1, 0}, {0, 0, 1} } ; // 缩放变换矩阵初始化
+	float (*m)[ELEMENT_LENGTH_LINE] = m_pMat[0] ;	 // 统一变换矩阵初始化
 
 	// 旋转矩阵
 	float rad = theta /180 * PI ;
@@ -140,9 +140,9 @@ void CMatrixMultPoint2D::Init()
 	ms[1][1] = scale ;
 
 	// 获得统一变换矩阵
-	for( int i = 0 ; i < 3 ; i++ )
-		for( int j = 0 ; j < 3 ; j++ )
-			for( int k = 0 ; k < 3 ; k++ )
+	for( int i = 0 ; i < ELEMENT_LENGTH_LINE ; i++ )
+		for( int j = 0 ; j < ELEMENT_LENGTH_LINE ; j++ )
+			for( int k = 0 ; k < ELEMENT_LENGTH_LINE ; k++ )
 				m[i][j] += ms[i][k] * mr[k][j];
 
 #endif
@@ -203,6 +203,9 @@ void CMatrixMultPoint2D::mmpRef()
 
 void CMatrixMultPoint2D::kernel( float imgIn[][SIZE_WIDTH][ELEMENT_COUNT_POINT], float imgOut[][SIZE_WIDTH][ELEMENT_COUNT_POINT], float m[][ELEMENT_COUNT_LINE], int i )
 {
+	//__m128 *pSrcPos = (__m128*)(&imgIn[SIZE_HEIGHT][SIZE_WIDTH][0] );
+	//__m128 *pDestPos = (__m128*)(&imgOut[SIZE_HEIGHT][SIZE_WIDTH][0] );
+
 	for (int j=0;j<SIZE_WIDTH ;j+=SIZE_POINT_PER_TIME)
 	{
 #if OPTIMIZE_SERIAL
