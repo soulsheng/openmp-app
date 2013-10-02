@@ -2,9 +2,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <xmmintrin.h>		// SSE
+
+#define OPTIMIZE_SSE			1
 #define SIZE_POINT_PER_TIME		2
 
-#define OPTIMIZE_SERIAL			1 // 串行优化
+#define OPTIMIZE_SERIAL			0 // 串行优化
 #define OUTPUT_TEXT_OR_IMAGE	1 // 1文本 ；0图形
 
 #define ONE_MATRIX_EACH_POINT	0
@@ -52,12 +55,17 @@ protected:
 	void kernel(  float imgIn[][SIZE_WIDTH][ELEMENT_COUNT_POINT], float imgOut[][SIZE_WIDTH][ELEMENT_COUNT_POINT], float m[][ELEMENT_COUNT_LINE], int i );
 	void kernelElement(float* pIn, float* pOut, float* pMat);
 
+	void kernelSSE(   float* imgIn, float* imgOut, __m128& m0, __m128& m1, __m128& m2, int i );
+
 private:
 	float (*m_imgIn)[SIZE_WIDTH][ELEMENT_COUNT_POINT],(*m_pOutRef)[SIZE_WIDTH][ELEMENT_COUNT_POINT],(*m_imgOut)[SIZE_WIDTH][ELEMENT_COUNT_POINT];
 	float (*m_pMat)[ELEMENT_COUNT_LINE][ELEMENT_LENGTH_LINE];
 	int	(*m_pIndex)[SIZE_WIDTH];
 	int m_nSizePoint, m_nSizeMatrix;
 	bool m_bMulti;
+
+	float *m_pIn, *m_pOut;
+	float *m_pMatrix;
 };
 
 
