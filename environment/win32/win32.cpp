@@ -309,7 +309,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 			int xOffset = 1000 ;
 			int yOffset = xOffset/2;
-			int nScale = SIZE_WIDTH/ (1<<8);
+			float nScale = SIZE_WIDTH/ (float)(1<<8);
 			for ( int i=0;i<SIZE_HEIGHT-nStride;i+= nStride )
 			{
 				for (int j=0;j<SIZE_WIDTH-nStride;j+= nStride )

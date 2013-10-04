@@ -26,14 +26,19 @@ void CMatrixMultPoint2D::mmpSerial( )
 	memcpy( m, m_pMat[0], sizeof(float) * ELEMENT_COUNT_LINE * ELEMENT_LENGTH_LINE ) ;
 
 #if 1
-	__m128 mat[3];
+	__m128 mat[3], matPad[3];
 	mat[0] = _mm_load_ps( m_pMatrix ) ;
 	mat[1] = _mm_load_ps( m_pMatrix+4 ) ;
 	mat[2] = _mm_load_ps( m_pMatrix+8 ) ;
+
+	matPad[0] = _mm_shuffle_ps( mat[0], mat[0], _MM_SHUFFLE(1,0,1,0) ); // m00, m01, m00, m01
+	matPad[1] = _mm_shuffle_ps( mat[1], mat[1], _MM_SHUFFLE(1,0,1,0) ); // m10, m11, m10, m11
+	matPad[2] = _mm_shuffle_ps( mat[2], mat[2], _MM_SHUFFLE(1,0,1,0) ); // m20, m21, m20, m21
+
 	for (int i=0;i<SIZE_HEIGHT;i++)
 	{
 #if OPTIMIZE_SSE
-		kernelSSE(m_pIn, m_pOut, mat[0], mat[1], mat[2], i);
+		kernelSSE(m_pIn, m_pOut, matPad[0], matPad[1], matPad[2], i);
 #else
 		kernel(m_imgIn, m_imgOut, m, i);
 #endif
@@ -61,15 +66,20 @@ void CMatrixMultPoint2D::mmpParallel( )
 	float (*imgOut)[SIZE_WIDTH][ELEMENT_COUNT_POINT] ;
 	imgOut = m_imgOut;
 
-	__m128 mat[3];
+	__m128 mat[3], matPad[3];
 	mat[0] = _mm_load_ps( m_pMatrix ) ;
 	mat[1] = _mm_load_ps( m_pMatrix+4 ) ;
 	mat[2] = _mm_load_ps( m_pMatrix+8 ) ;
+
+	matPad[0] = _mm_shuffle_ps( mat[0], mat[0], _MM_SHUFFLE(1,0,1,0) ); // m00, m01, m00, m01
+	matPad[1] = _mm_shuffle_ps( mat[1], mat[1], _MM_SHUFFLE(1,0,1,0) ); // m10, m11, m10, m11
+	matPad[2] = _mm_shuffle_ps( mat[2], mat[2], _MM_SHUFFLE(1,0,1,0) ); // m20, m21, m20, m21
+
 #pragma omp parallel for 
 	for (int i=0;i<SIZE_HEIGHT;i++)
 	{
 #if OPTIMIZE_SSE
-		kernelSSE( m_pIn, m_pOut, mat[0], mat[1], mat[2], i);
+		kernelSSE( m_pIn, m_pOut, matPad[0], matPad[1], matPad[2], i);
 #else
 		kernel(m_imgIn, m_imgOut, m, i);
 #endif
@@ -132,6 +142,7 @@ void CMatrixMultPoint2D::Init()
 		for (int j=0;j<SIZE_WIDTH;j++)
 			m_pIndex[i][j] = j%m_nSizeMatrix;
 
+	float offset = 15.0f;
 	float theta = 15;
 	float scale = 1.05;
 #define PI 3.1415927
@@ -146,9 +157,12 @@ void CMatrixMultPoint2D::Init()
 	mr[1][0] = -sin( rad ) ;
 	mr[1][1] = cos( rad ) ;
 
-	// 缩放矩阵
+	// 缩放矩阵 平移矩阵
 	ms[0][0] = scale ;
 	ms[1][1] = scale ;
+
+	ms[2][0] = offset;
+	ms[2][1] = -offset;
 
 	// 获得统一变换矩阵
 	for( int i = 0 ; i < ELEMENT_LENGTH_LINE ; i++ )
@@ -158,8 +172,9 @@ void CMatrixMultPoint2D::Init()
 			{
 				m[i][j] += ms[i][k] * mr[k][j];
 			}
-			*(m_pMatrix+j*ELEMENT_LENGTH_LINE+i) = m[i][j];
+			//*(m_pMatrix+j*ELEMENT_LENGTH_LINE+i) = m[i][j];
 		}
+	memcpy( m_pMatrix, &m[0][0], sizeof(float)*ELEMENT_LENGTH_LINE*ELEMENT_COUNT_LINE );
 #endif
 }
 
@@ -285,6 +300,7 @@ void CMatrixMultPoint2D::accumulate()
 
 void CMatrixMultPoint2D::kernelSSE( float* imgIn, float* imgOut, __m128& m0, __m128& m1, __m128& m2, int i )
 {
+#if 0
 	__m128 *pSrcPos = (__m128*)imgIn;
 	__m64 *pDestPos = (__m64*)imgOut;
 
@@ -317,6 +333,30 @@ void CMatrixMultPoint2D::kernelSSE( float* imgIn, float* imgOut, __m128& m0, __m
 		_mm_storel_pi( (__m64*)(&pDestPos[index*2+1]), vOut1 );
 		
 	}
+#else
+	__m128 *pSrcPos = (__m128*)imgIn;
+	__m128 *pDestPos = (__m128*)imgOut;
 
+	for (int j=0;j<SIZE_WIDTH/2 ;j++)
+	{
+		__m128 vInx, vIny;  // (x1,x1,x2,x2)  (y1,y1,y2,y2)
+
+		int index = j+i*SIZE_WIDTH/2;
+		vInx = _mm_shuffle_ps( pSrcPos[index], pSrcPos[index], _MM_SHUFFLE(2,2,0,0) );
+		vIny = _mm_shuffle_ps( pSrcPos[index], pSrcPos[index], _MM_SHUFFLE(3,3,1,1) );
+
+		__m128 vOut0;
+		__m128 tmp00, tmp01;
+		tmp00 = _mm_mul_ps( m0, vInx );
+		tmp01 = _mm_mul_ps( m1, vIny );
+
+		vOut0 = _mm_add_ps( tmp00, tmp01 );
+		vOut0 = _mm_add_ps( vOut0, m2 );
+		
+		pDestPos[index] = vOut0 ;
+
+
+	}
+#endif
 
 }
