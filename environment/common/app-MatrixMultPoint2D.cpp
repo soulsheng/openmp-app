@@ -25,7 +25,7 @@ void CMatrixMultPoint2D::mmpSerial( )
 	float m[ELEMENT_COUNT_LINE][ELEMENT_LENGTH_LINE];
 	memcpy( m, m_pMat[0], sizeof(float) * ELEMENT_COUNT_LINE * ELEMENT_LENGTH_LINE ) ;
 
-#if 1
+#if 0
 	__m128 mat[3], matPad[3];
 	mat[0] = _mm_load_ps( m_pMatrix ) ;
 	mat[1] = _mm_load_ps( m_pMatrix+4 ) ;
@@ -44,6 +44,17 @@ void CMatrixMultPoint2D::mmpSerial( )
 #endif
 	}
 #else
+
+#if OPTIMIZE_UNROLL_LOOP
+	float *pIn = &m_imgIn[0][0][0];
+	float *pOut = &m_imgOut[0][0][0];
+
+	for( int i = 0; i < SIZE_HEIGHT*SIZE_WIDTH; i ++ )
+		{
+			pOut[2*i]	= pIn[2*i]*m[0][0] + pIn[2*i+1]*m[1][0] + m[2][0];
+			pOut[2*i+1]	= pIn[2*i]*m[0][1] + pIn[2*i+1]*m[1][1] + m[2][1];
+		}
+#else
 	for( int i = 0; i < SIZE_HEIGHT; i ++ )
 		for( int j = 0; j < SIZE_WIDTH; j++ )	{
 			m_imgOut[i][j][0] 
@@ -51,6 +62,8 @@ void CMatrixMultPoint2D::mmpSerial( )
 			m_imgOut[i][j][1] 
 				= m_imgIn[i][j][0]*m[0][1] + m_imgIn[i][j][1]*m[1][1] + m[2][1];
 		}
+#endif
+
 #endif
 
 }
@@ -75,16 +88,37 @@ void CMatrixMultPoint2D::mmpParallel( )
 	matPad[1] = _mm_shuffle_ps( mat[1], mat[1], _MM_SHUFFLE(1,0,1,0) ); // m10, m11, m10, m11
 	matPad[2] = _mm_shuffle_ps( mat[2], mat[2], _MM_SHUFFLE(1,0,1,0) ); // m20, m21, m20, m21
 
-#pragma omp parallel for 
+//#pragma omp parallel for private(matPad[0], matPad[1], matPad[2]) 
+#if OPTIMIZE_UNROLL_LOOP
+	float *pIn = &m_imgIn[0][0][0];
+	float *pOut = &m_imgOut[0][0][0];
+
+	#pragma omp parallel for
+	for( int i = 0; i < SIZE_HEIGHT*SIZE_WIDTH; i ++ )
+	{
+		pOut[2*i]	= pIn[2*i]*m[0][0] + pIn[2*i+1]*m[1][0] + m[2][0];
+		pOut[2*i+1]	= pIn[2*i]*m[0][1] + pIn[2*i+1]*m[1][1] + m[2][1];
+	}
+#else
+
+#if !OPTIMIZE_INNER_LOOP
+	#pragma omp parallel for
+#endif
 	for (int i=0;i<SIZE_HEIGHT;i++)
 	{
 #if OPTIMIZE_SSE
 		kernelSSE( m_pIn, m_pOut, matPad[0], matPad[1], matPad[2], i);
 #else
-		kernel(m_imgIn, m_imgOut, m, i);
+
+#if OPTIMIZE_INNER_LOOP
+		kernelOMP(m_imgIn, m_imgOut, m, i);
+#else
+		kernel( m_imgIn, m_imgOut, m, i );
+#endif
+
 #endif
 	}
-
+#endif
 }
 
 void CMatrixMultPoint2D::Init()
@@ -116,11 +150,11 @@ void CMatrixMultPoint2D::Init()
 	m_pIndex = new int[SIZE_HEIGHT][SIZE_WIDTH];
 	
 	m_pMat=new float[m_nSizeMatrix][ELEMENT_COUNT_LINE][ELEMENT_LENGTH_LINE];
-	
+#if OPTIMIZE_SSE
 	m_pIn = (float*)_aligned_malloc( SIZE_HEIGHT*SIZE_WIDTH*ELEMENT_COUNT_POINT*sizeof(float), 16 );//new float[];
 	m_pOut = (float*)_aligned_malloc( SIZE_HEIGHT*SIZE_WIDTH*ELEMENT_COUNT_POINT*sizeof(float), 16 );//new float[];
 	m_pMatrix = (float*)_aligned_malloc( ELEMENT_COUNT_LINE*ELEMENT_LENGTH_LINE*sizeof(float), 16 );//new float[];
-
+#endif
 	for (int i=0;i<SIZE_HEIGHT;i++)
 		for (int j=0;j<SIZE_WIDTH;j++)
 		{
@@ -130,8 +164,10 @@ void CMatrixMultPoint2D::Init()
 			m_imgOut[i][j][0] = i;
 			m_imgOut[i][j][1] = j;
 		}
+#if OPTIMIZE_SSE
 	memcpy( m_pIn, &m_imgIn[0][0][0], SIZE_HEIGHT*SIZE_WIDTH*ELEMENT_COUNT_POINT*sizeof(float));
 	memcpy( m_pOut, &m_imgOut[0][0][0], SIZE_HEIGHT*SIZE_WIDTH*ELEMENT_COUNT_POINT*sizeof(float));
+#endif
 	
 	for (int i=0; i<m_nSizeMatrix; i++)
 		for (int j=0;j<ELEMENT_COUNT_LINE;j++)
@@ -174,7 +210,9 @@ void CMatrixMultPoint2D::Init()
 			}
 			//*(m_pMatrix+j*ELEMENT_LENGTH_LINE+i) = m[i][j];
 		}
+#if OPTIMIZE_SSE
 	memcpy( m_pMatrix, &m[0][0], sizeof(float)*ELEMENT_LENGTH_LINE*ELEMENT_COUNT_LINE );
+#endif //OPTIMIZE_SSE
 #endif
 }
 
@@ -236,28 +274,25 @@ void CMatrixMultPoint2D::mmpRef()
 
 void CMatrixMultPoint2D::kernel( float imgIn[][SIZE_WIDTH][ELEMENT_COUNT_POINT], float imgOut[][SIZE_WIDTH][ELEMENT_COUNT_POINT], float m[][ELEMENT_COUNT_LINE], int i )
 {
-	for (int j=0;j<SIZE_WIDTH ;j+=SIZE_POINT_PER_TIME)
+	for (int j=0;j<SIZE_WIDTH ;j++)
 	{
-#if OPTIMIZE_SERIAL
-		for (int k=0; k< SIZE_POINT_PER_TIME ; k++ )
-		{
-			float x =	imgIn[i][j+k][0] ;
-			float y =	imgIn[i][j+k][1] ;
-
-			imgOut[i][j+k][0] = x * m[0][0] + y * m[1][0] + m[2][0] ;
-			imgOut[i][j+k][1] = x * m[0][1] + y * m[1][1] + m[2][1] ;
-		}
-#else
-		int k=0;
-		for (int k=0; k< SIZE_POINT_PER_TIME ; k++ )
-		{
-			imgOut[i][j+k][0] = imgIn[i][j+k][0] * m[0][0] + imgIn[i][j+k][1] * m[1][0] + m[2][0] ;
-			imgOut[i][j+k][1] = imgIn[i][j+k][0] * m[0][1] + imgIn[i][j+k][1] * m[1][1] + m[2][1] ;
-		}
-#endif
+		imgOut[i][j][0] = imgIn[i][j][0] * m[0][0] + imgIn[i][j][1] * m[1][0] + m[2][0] ;
+		imgOut[i][j][1] = imgIn[i][j][0] * m[0][1] + imgIn[i][j][1] * m[1][1] + m[2][1] ;
 	}
 
 	
+}
+
+void CMatrixMultPoint2D::kernelOMP( float imgIn[][SIZE_WIDTH][ELEMENT_COUNT_POINT], float imgOut[][SIZE_WIDTH][ELEMENT_COUNT_POINT], float m[][ELEMENT_COUNT_LINE], int i )
+{
+#pragma omp parallel for private(i)
+	for (int j=0;j<SIZE_WIDTH ;j++)
+	{
+		imgOut[i][j][0] = imgIn[i][j][0] * m[0][0] + imgIn[i][j][1] * m[1][0] + m[2][0] ;
+		imgOut[i][j][1] = imgIn[i][j][0] * m[0][1] + imgIn[i][j][1] * m[1][1] + m[2][1] ;
+	}
+
+
 }
 
 void CMatrixMultPoint2D::kernelElement( float* pIn, float* pOut, float* pMat )
@@ -285,9 +320,11 @@ float* CMatrixMultPoint2D::getOutput()
 void CMatrixMultPoint2D::accumulate()
 {
 	//kernel(m_imgIn, m_imgOut, m_pMat[0], m_pIndex);
-	Implement(true);
+	Implement(m_bMulti);
 	memcpy( m_imgIn, m_imgOut, sizeof(float) * SIZE_HEIGHT * SIZE_WIDTH * ELEMENT_COUNT_POINT );
+#if OPTIMIZE_SSE
 	memcpy( m_pIn, m_pOut, sizeof(float) * SIZE_HEIGHT * SIZE_WIDTH * ELEMENT_COUNT_POINT );
+#endif
 }
 
 
