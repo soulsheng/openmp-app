@@ -86,6 +86,9 @@ void CMatrixMultPoint2D::mmpParallel( )
 	matPad[1] = _mm_shuffle_ps( mat[1], mat[1], _MM_SHUFFLE(1,0,1,0) ); // m10, m11, m10, m11
 	matPad[2] = _mm_shuffle_ps( mat[2], mat[2], _MM_SHUFFLE(1,0,1,0) ); // m20, m21, m20, m21
 
+#if OPTIMIZE_OMP && !OPTIMIZE_INNER_LOOP
+#pragma omp parallel for //shared(nOffset)
+#endif	
 	for (int i=0;i<SIZE_HEIGHT;i++)
 		kernelSSE(m_pIn, m_pOut, matPad[0], matPad[1], matPad[2], i);
 #else
