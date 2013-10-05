@@ -7,6 +7,7 @@
 #define OPTIMIZE_UNROLL_LOOP	0 // 展开/合并循环
 #define OPTIMIZE_INNER_LOOP		0 // 内层循环 并行化 
 #define OPTIMIZE_SSE			0
+#define OPTIMIZE_OMP			1
 #define SIZE_POINT_PER_TIME		1
 
 #define OPTIMIZE_SERIAL			0 // 串行优化
@@ -14,7 +15,7 @@
 
 #define ONE_MATRIX_EACH_POINT	0
 
-#define SIZE_WIDTH			(1<<13)
+#define SIZE_WIDTH			(1<<10)
 #define SIZE_HEIGHT		(SIZE_WIDTH)
 
 #if !ONE_MATRIX_EACH_POINT
@@ -58,7 +59,6 @@ protected:
 	void kernelElement(float* pIn, float* pOut, float* pMat);
 
 	void kernelSSE(   float* imgIn, float* imgOut, __m128& m0, __m128& m1, __m128& m2, int i );
-	void kernelOMP( float imgIn[][SIZE_WIDTH][ELEMENT_COUNT_POINT], float imgOut[][SIZE_WIDTH][ELEMENT_COUNT_POINT], float m[][ELEMENT_COUNT_LINE], int i );
 
 private:
 	float (*m_imgIn)[SIZE_WIDTH][ELEMENT_COUNT_POINT],(*m_pOutRef)[SIZE_WIDTH][ELEMENT_COUNT_POINT],(*m_imgOut)[SIZE_WIDTH][ELEMENT_COUNT_POINT];
