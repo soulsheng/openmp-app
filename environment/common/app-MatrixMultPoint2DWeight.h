@@ -32,7 +32,7 @@
 
 #define ELEMENT_COUNT_MATIRX	(ELEMENT_COUNT_LINE*ELEMENT_LENGTH_LINE)
 
-class CMatrixMultPoint2D
+class CMatrixMultPoint2DWeight
 {
 public:
 
@@ -46,8 +46,8 @@ public:
 
 	void	accumulate();
 
-	CMatrixMultPoint2D();
-	~CMatrixMultPoint2D();
+	CMatrixMultPoint2DWeight();
+	~CMatrixMultPoint2DWeight();
 protected:
 	void mmpSerial( );
 

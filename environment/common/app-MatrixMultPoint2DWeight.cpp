@@ -3,11 +3,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "app-MatrixMultPoint2D.h"
+#include "app-MatrixMultPoint2DWeight.h"
 
 
 
-int CMatrixMultPoint2D::mmp(  bool bMulti )
+int CMatrixMultPoint2DWeight::mmp(  bool bMulti )
 {
 	m_bMulti = bMulti;
 
@@ -20,7 +20,7 @@ int CMatrixMultPoint2D::mmp(  bool bMulti )
    return(0);
 }
 
-void CMatrixMultPoint2D::mmpSerial( )
+void CMatrixMultPoint2DWeight::mmpSerial( )
 {
 #if OPTIMIZE_SSE
 
@@ -72,7 +72,7 @@ void CMatrixMultPoint2D::mmpSerial( )
 }
 
 
-void CMatrixMultPoint2D::mmpParallel( )
+void CMatrixMultPoint2DWeight::mmpParallel( )
 {
 
 #if OPTIMIZE_SSE
@@ -100,7 +100,7 @@ void CMatrixMultPoint2D::mmpParallel( )
 	float *pIn = &m_imgIn[0][0][0];
 	float *pOut = &m_imgOut[0][0][0];
 
-#if OPTIMIZE_OMP && OPTIMIZE_INNER_LOOP
+#if OPTIMIZE_OMP
 #pragma omp parallel for
 #endif
 	for( int i = 0; i < SIZE_HEIGHT*SIZE_WIDTH; i ++ )
@@ -130,7 +130,7 @@ void CMatrixMultPoint2D::mmpParallel( )
 
 }
 
-void CMatrixMultPoint2D::Init()
+void CMatrixMultPoint2DWeight::Init()
 {
 	m_nSizePoint = SIZE_HEIGHT * SIZE_WIDTH;
 	m_nSizeMatrix = SIZE_MATRIX * SIZE_SCALE_M;
@@ -220,7 +220,7 @@ void CMatrixMultPoint2D::Init()
 
 }
 
-void CMatrixMultPoint2D::UnInit()
+void CMatrixMultPoint2DWeight::UnInit()
 {
 	if (m_imgIn)	{ delete[](m_imgIn); m_imgIn=NULL; }
 	if (m_pMat)	{ delete[](m_pMat); m_pMat=NULL; }
@@ -232,7 +232,7 @@ void CMatrixMultPoint2D::UnInit()
 	if (m_pOut)	{ _aligned_free(m_pOut); m_pOut=NULL; }
 }
 
-void CMatrixMultPoint2D::Implement( bool bMulti )
+void CMatrixMultPoint2DWeight::Implement( bool bMulti )
 {
 	m_bMulti = bMulti;
 
@@ -242,7 +242,7 @@ void CMatrixMultPoint2D::Implement( bool bMulti )
 		mmpSerial( );
 }
 
-CMatrixMultPoint2D::CMatrixMultPoint2D()
+CMatrixMultPoint2DWeight::CMatrixMultPoint2DWeight()
 {
 	m_imgIn = m_imgOut = m_pOutRef = NULL;
 	m_pMat = NULL;
@@ -250,12 +250,12 @@ CMatrixMultPoint2D::CMatrixMultPoint2D()
 	m_bMulti = false;
 }
 
-CMatrixMultPoint2D::~CMatrixMultPoint2D()
+CMatrixMultPoint2DWeight::~CMatrixMultPoint2DWeight()
 {
 	UnInit();
 }
 #define ABS(a, b)  ((a)>(b)?(a-b):(b-a))  
-bool CMatrixMultPoint2D::verify()
+bool CMatrixMultPoint2DWeight::verify()
 {
 	mmpRef( );
 
@@ -270,13 +270,13 @@ bool CMatrixMultPoint2D::verify()
 	return true;
 }
 
-void CMatrixMultPoint2D::mmpRef()
+void CMatrixMultPoint2DWeight::mmpRef()
 {
 	//kernel(m_imgIn, m_pOutRef, m_pMat[0], m_pIndex);
 
 }
 
-void CMatrixMultPoint2D::kernel( float imgIn[][SIZE_WIDTH][ELEMENT_COUNT_POINT], float imgOut[][SIZE_WIDTH][ELEMENT_COUNT_POINT], float m[][ELEMENT_COUNT_LINE], int i )
+void CMatrixMultPoint2DWeight::kernel( float imgIn[][SIZE_WIDTH][ELEMENT_COUNT_POINT], float imgOut[][SIZE_WIDTH][ELEMENT_COUNT_POINT], float m[][ELEMENT_COUNT_LINE], int i )
 {
 #if OPTIMIZE_OMP && OPTIMIZE_INNER_LOOP
 #pragma omp parallel for //shared(i)
@@ -290,7 +290,7 @@ void CMatrixMultPoint2D::kernel( float imgIn[][SIZE_WIDTH][ELEMENT_COUNT_POINT],
 }
 
 
-void CMatrixMultPoint2D::kernelElement( float* pIn, float* pOut, float* pMat )
+void CMatrixMultPoint2DWeight::kernelElement( float* pIn, float* pOut, float* pMat )
 {
 	pOut[0] =
 		pMat[0*ELEMENT_LENGTH_LINE+0] * pIn[0] +
@@ -303,7 +303,7 @@ void CMatrixMultPoint2D::kernelElement( float* pIn, float* pOut, float* pMat )
 		pMat[2*ELEMENT_LENGTH_LINE+1] ;
 }
 
-float* CMatrixMultPoint2D::getOutput()
+float* CMatrixMultPoint2DWeight::getOutput()
 {	
 #if !OPTIMIZE_SSE
 	return &m_imgOut[0][0][0]; 
@@ -312,7 +312,7 @@ float* CMatrixMultPoint2D::getOutput()
 #endif
 }
 
-void CMatrixMultPoint2D::accumulate()
+void CMatrixMultPoint2DWeight::accumulate()
 {
 	//kernel(m_imgIn, m_imgOut, m_pMat[0], m_pIndex);
 	Implement(m_bMulti);
@@ -331,7 +331,7 @@ void CMatrixMultPoint2D::accumulate()
 #define __MM_SELECT(v, fp)                                                          \
 	_mm_shuffle_ps((v), (v), _MM_SHUFFLE((fp),(fp),(fp),(fp)))
 
-void CMatrixMultPoint2D::kernelSSE( float* imgIn, float* imgOut, __m128& m0, __m128& m1, __m128& m2, int i )
+void CMatrixMultPoint2DWeight::kernelSSE( float* imgIn, float* imgOut, __m128& m0, __m128& m1, __m128& m2, int i )
 {
 #if 0
 	__m128 *pSrcPos = (__m128*)imgIn;

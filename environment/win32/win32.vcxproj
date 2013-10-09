@@ -80,6 +80,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\common\app-MatrixMultPoint2D.h" />
+    <ClInclude Include="..\common\app-MatrixMultPoint2DWeight.h" />
     <ClInclude Include="..\common\app-MatrixMultPoint3D.h" />
     <ClInclude Include="..\common\app-MatrixMultVector.h" />
     <ClInclude Include="..\common\timer.h" />
@@ -91,6 +92,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\common\app-MatrixMultPoint2D.cpp" />
+    <ClCompile Include="..\common\app-MatrixMultPoint2DWeight.cpp" />
     <ClCompile Include="..\common\app-MatrixMultPoint3D.cpp" />
     <ClCompile Include="..\common\app-MatrixMultVector.cpp" />
     <ClCompile Include="..\common\timer.cpp" />

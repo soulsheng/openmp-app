@@ -8,6 +8,7 @@
 #include "../common/app-MatrixMultVector.h"
 #include "../common/app-MatrixMultPoint3D.h"
 #include "../common/app-MatrixMultPoint2D.h"
+#include "../common/app-MatrixMultPoint2DWeight.h"
 
 #define MAX_LOADSTRING 100
 
@@ -23,7 +24,7 @@ LRESULT CALLBACK	WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK	About(HWND, UINT, WPARAM, LPARAM);
 
 //CMatrixMultVector mv;
-CMatrixMultPoint2D mv;
+CMatrixMultPoint2DWeight mv;
 CTimerOMP  timer1;
 
 std::vector<std::string>			resultString;
