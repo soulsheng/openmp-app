@@ -108,10 +108,27 @@ void CMatrixMultPoint2DWeight::mmpParallel( )
 #if !OPTIMIZE_SERIAL
 	for( int i = 0; i < SIZE_HEIGHT; i ++ )
 		for( int j = 0; j < SIZE_WIDTH; j++ )	{
-			m_imgOut[i][j][0] 
-			= m_imgIn[i][j][0]*m[0][0] + m_imgIn[i][j][1]*m[1][0] + m[2][0];
-			m_imgOut[i][j][1] 
-			= m_imgIn[i][j][0]*m[0][1] + m_imgIn[i][j][1]*m[1][1] + m[2][1];
+			float x = m_imgIn[i][j][0];
+			float y = m_imgIn[i][j][1];
+
+			float offset = 4.0f;
+			float distance = sqrt( x*x + y*y + offset) ;
+			float weight = 1.0f / sqrt(distance)  ;
+
+			float radOne = rad * weight;
+			float mOne[2][2];
+
+			mOne[0][0] = cos( radOne ) ;
+			mOne[0][1] = sin( radOne ) ;
+			mOne[1][0] = -sin( radOne ) ;
+			mOne[1][1] = cos( radOne ) ;
+
+			// Ëõ·Å¾ØÕó Æ½ÒÆ¾ØÕó
+			//m[0][0] *= SCALE ;
+			//m[1][1] *= SCALE ;
+
+			m_imgOut[i][j][0] = x * mOne[0][0] + y * mOne[1][0] ;
+			m_imgOut[i][j][1] = x * mOne[0][1] + y * mOne[1][1] ;
 		}
 #else
 	for (int i=0;i<SIZE_HEIGHT;i++)
