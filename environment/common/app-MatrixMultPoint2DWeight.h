@@ -4,8 +4,13 @@
 
 #include <xmmintrin.h>		// SSE
 
+#define SCALE					1.05
+#define ANGLE_THETA				50
+#define PI 3.1415927
+#define ANGLE_THETA_RAD			((ANGLE_THETA) * PI /180)
+
 #define OPTIMIZE_UNROLL_LOOP	0 // 展开/合并循环
-#define OPTIMIZE_INNER_LOOP		0 // 内层循环 并行化 
+#define OPTIMIZE_INNER_LOOP		1 // 内层循环 并行化 
 #define OPTIMIZE_SSE			1
 #define OPTIMIZE_OMP			1
 #define SIZE_POINT_PER_TIME		1
@@ -55,10 +60,10 @@ protected:
 
 	void mmpRef( );
 
-	void kernel(  float imgIn[][SIZE_WIDTH][ELEMENT_COUNT_POINT], float imgOut[][SIZE_WIDTH][ELEMENT_COUNT_POINT], float m[][ELEMENT_COUNT_LINE], int i );
+	void kernel(  float imgIn[][SIZE_WIDTH][ELEMENT_COUNT_POINT], float imgOut[][SIZE_WIDTH][ELEMENT_COUNT_POINT], float m[][ELEMENT_COUNT_LINE], int i, float rad);
 	void kernelElement(float* pIn, float* pOut, float* pMat);
 
-	void kernelSSE(   float* imgIn, float* imgOut, __m128& m0, __m128& m1, __m128& m2, int i );
+	void kernelSSE(   float* imgIn, float* imgOut, int i, float rad=0.0f );
 
 private:
 	float (*m_imgIn)[SIZE_WIDTH][ELEMENT_COUNT_POINT],(*m_pOutRef)[SIZE_WIDTH][ELEMENT_COUNT_POINT],(*m_imgOut)[SIZE_WIDTH][ELEMENT_COUNT_POINT];

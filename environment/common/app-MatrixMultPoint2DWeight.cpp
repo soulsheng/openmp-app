@@ -22,6 +22,8 @@ int CMatrixMultPoint2DWeight::mmp(  bool bMulti )
 
 void CMatrixMultPoint2DWeight::mmpSerial( )
 {
+	float rad = ANGLE_THETA_RAD ;
+
 #if OPTIMIZE_SSE
 
 	__m128 mat[3], matPad[3];
@@ -34,7 +36,7 @@ void CMatrixMultPoint2DWeight::mmpSerial( )
 	matPad[2] = _mm_shuffle_ps( mat[2], mat[2], _MM_SHUFFLE(1,0,1,0) ); // m20, m21, m20, m21
 
 	for (int i=0;i<SIZE_HEIGHT;i++)
-		kernelSSE(m_pIn, m_pOut, matPad[0], matPad[1], matPad[2], i);
+		kernelSSE(m_pIn, m_pOut, i, rad);
 #else
 
 	float m[ELEMENT_COUNT_LINE][ELEMENT_LENGTH_LINE];
@@ -61,7 +63,7 @@ void CMatrixMultPoint2DWeight::mmpSerial( )
 		}
 #else
 	for (int i=0;i<SIZE_HEIGHT;i++)
-		kernel(m_imgIn, m_imgOut, m, i);
+		kernel(m_imgIn, m_imgOut, m, i, rad);
 
 #endif //OPTIMIZE_SERIAL
 
@@ -74,23 +76,16 @@ void CMatrixMultPoint2DWeight::mmpSerial( )
 
 void CMatrixMultPoint2DWeight::mmpParallel( )
 {
+	float rad = ANGLE_THETA_RAD ;
 
 #if OPTIMIZE_SSE
 
-	__m128 mat[3], matPad[3];
-	mat[0] = _mm_load_ps( m_pMatrix ) ;
-	mat[1] = _mm_load_ps( m_pMatrix+4 ) ;
-	mat[2] = _mm_load_ps( m_pMatrix+8 ) ;
-
-	matPad[0] = _mm_shuffle_ps( mat[0], mat[0], _MM_SHUFFLE(1,0,1,0) ); // m00, m01, m00, m01
-	matPad[1] = _mm_shuffle_ps( mat[1], mat[1], _MM_SHUFFLE(1,0,1,0) ); // m10, m11, m10, m11
-	matPad[2] = _mm_shuffle_ps( mat[2], mat[2], _MM_SHUFFLE(1,0,1,0) ); // m20, m21, m20, m21
 
 #if OPTIMIZE_OMP && !OPTIMIZE_INNER_LOOP
 #pragma omp parallel for //shared(nOffset)
 #endif	
 	for (int i=0;i<SIZE_HEIGHT;i++)
-		kernelSSE(m_pIn, m_pOut, matPad[0], matPad[1], matPad[2], i);
+		kernelSSE(m_pIn, m_pOut, i, rad);
 #else
 
 	float m[ELEMENT_COUNT_LINE][ELEMENT_LENGTH_LINE];
@@ -120,7 +115,7 @@ void CMatrixMultPoint2DWeight::mmpParallel( )
 		}
 #else
 	for (int i=0;i<SIZE_HEIGHT;i++)
-		kernel(m_imgIn, m_imgOut, m, i);
+		kernel(m_imgIn, m_imgOut, m, i, rad);
 
 #endif //OPTIMIZE_SERIAL
 
@@ -182,16 +177,15 @@ void CMatrixMultPoint2DWeight::Init()
 	
 	
 
-	float offset = 15.0f;
-	float theta = 15;
-	float scale = 1.05;
-#define PI 3.1415927
+	float offset = 0.0f;
+	float theta = ANGLE_THETA;
+	float scale = SCALE;
 	float mr[ELEMENT_LENGTH_LINE][ELEMENT_LENGTH_LINE] = { {1, 0, 0}, {0, 1, 0}, {0, 0, 1} } ; // 旋转变换矩阵初始化
 	float ms[ELEMENT_LENGTH_LINE][ELEMENT_LENGTH_LINE] = { {1, 0, 0}, {0, 1, 0}, {0, 0, 1} } ; // 缩放变换矩阵初始化
 	float (*m)[ELEMENT_LENGTH_LINE] = m_pMat[0] ;	 // 统一变换矩阵初始化
 
 	// 旋转矩阵
-	float rad = theta /180 * PI ;
+	float rad = ANGLE_THETA_RAD ;
 	mr[0][0] = cos( rad ) ;
 	mr[0][1] = sin( rad ) ;
 	mr[1][0] = -sin( rad ) ;
@@ -276,15 +270,34 @@ void CMatrixMultPoint2DWeight::mmpRef()
 
 }
 
-void CMatrixMultPoint2DWeight::kernel( float imgIn[][SIZE_WIDTH][ELEMENT_COUNT_POINT], float imgOut[][SIZE_WIDTH][ELEMENT_COUNT_POINT], float m[][ELEMENT_COUNT_LINE], int i )
+void CMatrixMultPoint2DWeight::kernel( float imgIn[][SIZE_WIDTH][ELEMENT_COUNT_POINT], float imgOut[][SIZE_WIDTH][ELEMENT_COUNT_POINT], float m[][ELEMENT_COUNT_LINE], int i, float rad )
 {
 #if OPTIMIZE_OMP && OPTIMIZE_INNER_LOOP
 #pragma omp parallel for //shared(i)
 #endif
 		for (int j=0;j<SIZE_WIDTH ;j++)
 		{
-			imgOut[i][j][0] = imgIn[i][j][0] * m[0][0] + imgIn[i][j][1] * m[1][0] + m[2][0] ;
-			imgOut[i][j][1] = imgIn[i][j][0] * m[0][1] + imgIn[i][j][1] * m[1][1] + m[2][1] ;
+			float x = imgIn[i][j][0];
+			float y = imgIn[i][j][1];
+
+			float offset = 4.0f;
+			float distance = sqrt( x*x + y*y + offset) ;
+			float weight = 1.0f / sqrt(distance)  ;
+
+			float radOne = rad * weight;
+			float mOne[2][2];
+
+			mOne[0][0] = cos( radOne ) ;
+			mOne[0][1] = sin( radOne ) ;
+			mOne[1][0] = -sin( radOne ) ;
+			mOne[1][1] = cos( radOne ) ;
+
+			// 缩放矩阵 平移矩阵
+			//m[0][0] *= SCALE ;
+			//m[1][1] *= SCALE ;
+
+			imgOut[i][j][0] = x * mOne[0][0] + y * mOne[1][0] ;
+			imgOut[i][j][1] = x * mOne[0][1] + y * mOne[1][1] ;
 		}
 
 }
@@ -331,7 +344,7 @@ void CMatrixMultPoint2DWeight::accumulate()
 #define __MM_SELECT(v, fp)                                                          \
 	_mm_shuffle_ps((v), (v), _MM_SHUFFLE((fp),(fp),(fp),(fp)))
 
-void CMatrixMultPoint2DWeight::kernelSSE( float* imgIn, float* imgOut, __m128& m0, __m128& m1, __m128& m2, int i )
+void CMatrixMultPoint2DWeight::kernelSSE( float* imgIn, float* imgOut, int i, float rad )
 {
 #if 0
 	__m128 *pSrcPos = (__m128*)imgIn;
@@ -376,19 +389,43 @@ void CMatrixMultPoint2DWeight::kernelSSE( float* imgIn, float* imgOut, __m128& m
 #endif
 	for (int j=0;j<SIZE_WIDTH/2 ;j++)
 	{
-		
 		// (x1,x1,x2,x2)  (y1,y1,y2,y2)
 		__m128 vIn = pSrcPos[j+nOffset];
 
 		__m128 vInx = _mm_shuffle_ps( vIn, vIn, _MM_SHUFFLE(2,2,0,0) );
 		__m128 vIny = _mm_shuffle_ps( vIn, vIn, _MM_SHUFFLE(3,3,1,1) );
 
-		__m128 tmp00 = _mm_mul_ps( m0, vInx );
-		__m128 tmp01 = _mm_mul_ps( m1, vIny );
+		__m128 xySqure = _mm_add_ps( _mm_mul_ps( vInx, vInx ) , _mm_mul_ps( vIny, vIny ) );
+		xySqure = _mm_add_ps( xySqure, _mm_set_ps1(4.0f) );
+		__m128 weight = _mm_sqrt_ps( _mm_sqrt_ps(xySqure) );
+		weight = _mm_rcp_ps(weight);
+		__m128 radWeight = _mm_load_ps1(&rad);
+		radWeight = _mm_mul_ps( radWeight, weight);
+
+		 __declspec(align(16)) float radLast[4];
+		_mm_store_ps( radLast, radWeight );
+
+		 __declspec(align(16)) float mOne[2][4];
+
+		mOne[0][0] = cos( radLast[0] ) ;
+		mOne[0][1] = sin( radLast[0] ) ;
+		mOne[1][0] = -mOne[0][1] ;
+		mOne[1][1] = mOne[0][0] ;
+
+		mOne[0][2] = cos( radLast[2] ) ;
+		mOne[0][3] = sin( radLast[2] ) ;
+		mOne[1][2] = -mOne[0][3] ;
+		mOne[1][3] = mOne[0][2] ;
+
+		__m128 mat[2];
+		mat[0] = _mm_load_ps( mOne[0] ) ;
+		mat[1] = _mm_load_ps( mOne[1] ) ;
+
+		__m128 tmp00 = _mm_mul_ps( mat[0], vInx );
+		__m128 tmp01 = _mm_mul_ps( mat[1], vIny );
 
 		__m128 vOut0 = _mm_add_ps( tmp00, tmp01 );
-		vOut0 = _mm_add_ps( vOut0, m2 );
-		
+
 		pDestPos[j+nOffset] = vOut0 ;
 
 
