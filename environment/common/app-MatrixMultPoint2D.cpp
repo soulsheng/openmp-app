@@ -130,6 +130,24 @@ void CMatrixMultPoint2D::mmpParallel( )
 
 }
 
+void	matrixMultiply(float mLeft[][ELEMENT_LENGTH_LINE], float mRight[][ELEMENT_LENGTH_LINE], float mResult[][ELEMENT_LENGTH_LINE])
+{
+	double mMix[ELEMENT_LENGTH_LINE][ELEMENT_LENGTH_LINE] = { {0, 0, 0}, {0, 0, 0}, {0, 0, 0} } ; // 混合变换矩阵初始化
+	for( int i = 0 ; i < ELEMENT_LENGTH_LINE ; i++ )
+		for( int j = 0 ; j < ELEMENT_LENGTH_LINE ; j++ )
+		{
+			for( int k = 0 ; k < ELEMENT_LENGTH_LINE ; k++ )
+			{
+				mMix[i][j] += mLeft[i][k] * mRight[k][j];
+			}
+		}
+
+	for( int i = 0 ; i < ELEMENT_LENGTH_LINE ; i++ )
+		for( int j = 0 ; j < ELEMENT_LENGTH_LINE ; j++ )
+			mResult[i][j] = mMix[i][j];
+
+}
+
 void CMatrixMultPoint2D::Init()
 {
 	m_nSizePoint = SIZE_HEIGHT * SIZE_WIDTH;
@@ -182,29 +200,50 @@ void CMatrixMultPoint2D::Init()
 	
 	
 
-	float offset = 15.0f;
-	float theta = 15;
-	float scale = 1.05;
+	float offset = 0.0f;//15.0f;
+	float theta = 12;
+	float scale = 1.0;
 #define PI 3.1415927
 	float mr[ELEMENT_LENGTH_LINE][ELEMENT_LENGTH_LINE] = { {1, 0, 0}, {0, 1, 0}, {0, 0, 1} } ; // 旋转变换矩阵初始化
 	float ms[ELEMENT_LENGTH_LINE][ELEMENT_LENGTH_LINE] = { {1, 0, 0}, {0, 1, 0}, {0, 0, 1} } ; // 缩放变换矩阵初始化
 	float (*m)[ELEMENT_LENGTH_LINE] = m_pMat[0] ;	 // 统一变换矩阵初始化
 
+	float mLast[ELEMENT_LENGTH_LINE][ELEMENT_LENGTH_LINE] = { {1, 0, 0}, {0, 1, 0}, {0, 0, 1} } ; // 统一变换矩阵初始化
+	float mt[ELEMENT_LENGTH_LINE][ELEMENT_LENGTH_LINE] = { {1, 0, 0}, {0, 1, 0}, {0, 0, 1} } ; // 平移变换矩阵初始化
+	// 中心平移到原点
+	mt[2][0] = SIZE_WIDTH/2.0f ;
+	mt[2][1] = SIZE_HEIGHT/2.0f ;
+	matrixMultiply( mt, mLast, mLast );
+
 	// 旋转矩阵
-	float rad = theta /180 * PI ;
+	float rad = theta * PI /180 ;
 	mr[0][0] = cos( rad ) ;
 	mr[0][1] = sin( rad ) ;
 	mr[1][0] = -sin( rad ) ;
 	mr[1][1] = cos( rad ) ;
+	matrixMultiply( mr, mLast, mLast );
 
 	// 缩放矩阵 平移矩阵
 	ms[0][0] = scale ;
 	ms[1][1] = scale ;
+	//matrixMultiply( ms, mLast, mLast );
 
-	ms[2][0] = offset;
-	ms[2][1] = -offset;
+	// 平移回原中心
+	mt[2][0] = -SIZE_WIDTH/2.0f ;
+	mt[2][1] = -SIZE_HEIGHT/2.0f ;
+	matrixMultiply( mt, mLast, mLast );
 
 	// 获得统一变换矩阵
+#if 1
+	//matrixMultiply( ms, mr, mLast );
+
+#if !OPTIMIZE_SSE
+	memcpy( m, mLast, ELEMENT_COUNT_LINE*ELEMENT_LENGTH_LINE*sizeof(float) );
+#else
+	memcpy( m_pMatrix, mLast, ELEMENT_COUNT_LINE*ELEMENT_LENGTH_LINE*sizeof(float) );
+#endif //OPTIMIZE_SSE
+
+#else
 	for( int i = 0 ; i < ELEMENT_LENGTH_LINE ; i++ )
 		for( int j = 0 ; j < ELEMENT_LENGTH_LINE ; j++ )
 		{
@@ -217,7 +256,7 @@ void CMatrixMultPoint2D::Init()
 #endif
 			}
 		}
-
+#endif
 }
 
 void CMatrixMultPoint2D::UnInit()

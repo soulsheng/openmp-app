@@ -6,12 +6,12 @@
 
 #define OPTIMIZE_UNROLL_LOOP	0 // 展开/合并循环
 #define OPTIMIZE_INNER_LOOP		0 // 内层循环 并行化 
-#define OPTIMIZE_SSE			1
-#define OPTIMIZE_OMP			1
+#define OPTIMIZE_SSE			0
+#define OPTIMIZE_OMP			0
 #define SIZE_POINT_PER_TIME		1
 
 #define OPTIMIZE_SERIAL			1 // 串行优化
-#define OUTPUT_TEXT_OR_IMAGE	1 // 1文本 ；0图形
+#define OUTPUT_TEXT_OR_IMAGE	0 // 1文本 ；0图形
 
 #define ONE_MATRIX_EACH_POINT	0
 
