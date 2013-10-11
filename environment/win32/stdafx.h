@@ -21,5 +21,10 @@
 
 #define ENABLE_PARALLEL	1 // 多线程并行开关
 
+#define NAME_STRING_PLATFORM_1	"Advanced Micro Devices, Inc."
+#define NAME_STRING_PLATFORM	"Intel(R) OpenCL"
+#define NAME_STRING_PLATFORM_3	"AMD Accelerated Parallel Processing"
+#define NAME_STRING_PLATFORM_4	"NVIDIA CUDA"
+
 
 // TODO: 在此处引用程序需要的其他头文件

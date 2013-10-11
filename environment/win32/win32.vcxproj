@@ -64,13 +64,16 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <OpenMPSupport>true</OpenMPSupport>
+      <OpenMPSupport>false</OpenMPSupport>
+      <AdditionalIncludeDirectories>$(INTELOCLSDKROOT)\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalLibraryDirectories>$(INTELOCLSDKROOT)\lib\x86</AdditionalLibraryDirectories>
+      <AdditionalDependencies>OpenCL.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -81,10 +84,13 @@
   <ItemGroup>
     <ClInclude Include="..\common\app-MatrixMultPoint2D.h" />
     <ClInclude Include="..\common\app-MatrixMultPoint2DWeight.h" />
+    <ClInclude Include="..\common\app-MatrixMultPoint2DWeightOcl.h" />
     <ClInclude Include="..\common\app-MatrixMultPoint3D.h" />
     <ClInclude Include="..\common\app-MatrixMultVector.h" />
+    <ClInclude Include="..\common\COclManager.h" />
     <ClInclude Include="..\common\timer.h" />
     <ClInclude Include="..\common\timerOMP.h" />
+    <ClInclude Include="..\common\utils.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
@@ -93,10 +99,13 @@
   <ItemGroup>
     <ClCompile Include="..\common\app-MatrixMultPoint2D.cpp" />
     <ClCompile Include="..\common\app-MatrixMultPoint2DWeight.cpp" />
+    <ClCompile Include="..\common\app-MatrixMultPoint2DWeightOcl.cpp" />
     <ClCompile Include="..\common\app-MatrixMultPoint3D.cpp" />
     <ClCompile Include="..\common\app-MatrixMultVector.cpp" />
+    <ClCompile Include="..\common\COclManager.cpp" />
     <ClCompile Include="..\common\timer.cpp" />
     <ClCompile Include="..\common\timerOMP.cpp" />
+    <ClCompile Include="..\common\utils.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
