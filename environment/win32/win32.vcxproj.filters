@@ -25,6 +25,7 @@
     <None Include="win32.ico">
       <Filter>资源文件</Filter>
     </None>
+    <None Include="MatrixMultPoint2D.cl" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">

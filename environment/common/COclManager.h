@@ -17,6 +17,16 @@ typedef CL_API_ENTRY cl_int (CL_API_CALL *clGetGLContextInfoKHR_fn)(
 #define clGetGLContextInfoKHR clGetGLContextInfoKHR_proc
 static clGetGLContextInfoKHR_fn clGetGLContextInfoKHR;
 
+struct ENV_OPENCL 
+{
+	cl_context	g_context;
+	cl_command_queue g_cmd_queue;
+	cl_program	g_program;
+	cl_kernel	g_kernel;
+
+	cl_device_id g_device_ID;
+};
+
 class COclManager
 {
 public:
@@ -30,13 +40,9 @@ protected:
 
 private:
 	// OpenCL specific
-	cl_context	g_context;
-	cl_command_queue g_cmd_queue;
-	cl_program	g_program;
-	cl_kernel	g_kernel;
+	ENV_OPENCL	m_env;
 
 	cl_uint     g_min_align;
-	cl_device_id g_device_ID;
 
 public:
 	//MilkshapeModel* m_model;

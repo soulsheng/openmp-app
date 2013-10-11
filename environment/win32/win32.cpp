@@ -80,6 +80,7 @@ void   testInit()
 
 	resultString.push_back( std::string() );
 
+	oclManager.Setup_OpenCL( KernelFileNameString, KernelFunctionNameString );
 }
 
 void   testRun(bool bMulti)

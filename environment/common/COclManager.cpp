@@ -25,7 +25,13 @@ COclManager::~COclManager()
 
 bool COclManager::Setup_OpenCL( const char *program_source , const char *kernel_name)
 {
-	
+	cl_uint nOCLDeviceCount = 0;
+	clGetPlatformIDs(0,NULL,&nOCLDeviceCount);
+	if ( nOCLDeviceCount == 0)
+	{// 未安装OpenCL
+		return false;
+	}
+
 	cl_device_id devices[16];
 	size_t cb;
 	cl_uint size_ret = 0;
@@ -46,7 +52,7 @@ bool COclManager::Setup_OpenCL( const char *program_source , const char *kernel_
 	cl_context_properties context_properties[3] = {CL_CONTEXT_PLATFORM, (cl_context_properties)intel_platform_id, NULL };
 
 	// create the OpenCL context on a CPU/PG 
-	g_context = clCreateContextFromType(context_properties, CL_DEVICE_TYPE_CPU, NULL, NULL, NULL);
+	m_env.g_context = clCreateContextFromType(context_properties, CL_DEVICE_TYPE_CPU, NULL, NULL, NULL);
 #else
 
 	cl_context_properties properties[] = {
@@ -82,31 +88,31 @@ bool COclManager::Setup_OpenCL( const char *program_source , const char *kernel_
 			NULL);
 
 		//利用刚刚创建的属性创建上下文
-		g_context = clCreateContext(properties, 1, &g_device_ID, NULL, NULL, &err);
+		m_env.g_context = clCreateContext(properties, 1, &g_device_ID, NULL, NULL, &err);
 #endif
 
-		if (g_context == (cl_context)0 )
+		if (m_env.g_context == (cl_context)0 )
 			return false;
 
 		// get the list of CPU devices associated with context
-		err = clGetContextInfo(g_context, CL_CONTEXT_DEVICES, 0, NULL, &cb);
+		err = clGetContextInfo(m_env.g_context, CL_CONTEXT_DEVICES, 0, NULL, &cb);
 
 
 #if !ENABLE_CL_GL_INTER
-		clGetContextInfo(g_context, CL_CONTEXT_DEVICES, cb, devices, NULL);
-		g_device_ID = devices[0];
+		clGetContextInfo(m_env.g_context, CL_CONTEXT_DEVICES, cb, devices, NULL);
+		m_env.g_device_ID = devices[0];
 #endif
 
-		g_cmd_queue = clCreateCommandQueue(g_context, g_device_ID, 0, NULL);
-		if (g_cmd_queue == (cl_command_queue)0)
+		m_env.g_cmd_queue = clCreateCommandQueue(m_env.g_context, m_env.g_device_ID, 0, NULL);
+		if (m_env.g_cmd_queue == (cl_command_queue)0)
 		{
 			Cleanup();
 			return false;
 		}
 
 	char *sources = ReadSources(program_source);	//read program .cl source file
-	g_program = clCreateProgramWithSource(g_context, 1, (const char**)&sources, NULL, NULL);
-	if (g_program == (cl_program)0)
+	m_env.g_program = clCreateProgramWithSource(m_env.g_context, 1, (const char**)&sources, NULL, &err);
+	if (m_env.g_program == (cl_program)0)
 	{
 		printf("ERROR: Failed to create Program with source...\n");
 		Cleanup();
@@ -114,7 +120,7 @@ bool COclManager::Setup_OpenCL( const char *program_source , const char *kernel_
 		return false;
 	}
 
-	err = clBuildProgram(g_program, 0, NULL, NULL, NULL, NULL);
+	err = clBuildProgram(m_env.g_program, 0, NULL, NULL, NULL, NULL);
 	if (err != CL_SUCCESS)
 	{
 		printf("ERROR: Failed to build program...\n");
@@ -123,9 +129,9 @@ bool COclManager::Setup_OpenCL( const char *program_source , const char *kernel_
 		return false;
 	}
 
-	g_kernel = clCreateKernel(g_program, kernel_name, NULL);
+	m_env.g_kernel = clCreateKernel(m_env.g_program, kernel_name, NULL);
 
-	if (g_kernel == (cl_kernel)0)
+	if (m_env.g_kernel == (cl_kernel)0)
 	{
 		printf("ERROR: Failed to create kernel...\n");
 		Cleanup();
@@ -137,7 +143,7 @@ bool COclManager::Setup_OpenCL( const char *program_source , const char *kernel_
 
 	// use first device ID
 	//g_device_ID = devices[0];
-	err = clGetDeviceInfo(g_device_ID, CL_DEVICE_NAME, 128, device_name, NULL);
+	err = clGetDeviceInfo(m_env.g_device_ID, CL_DEVICE_NAME, 128, device_name, NULL);
 	if (err!=CL_SUCCESS)
 	{
 		printf("ERROR: Failed to get device information (device name)...\n");
@@ -146,7 +152,7 @@ bool COclManager::Setup_OpenCL( const char *program_source , const char *kernel_
 	}
 	printf("Using device %s...\n", device_name);
 
-	err = clGetDeviceInfo(g_device_ID, CL_DEVICE_MAX_COMPUTE_UNITS, sizeof(cl_uint), &num_cores, NULL);
+	err = clGetDeviceInfo(m_env.g_device_ID, CL_DEVICE_MAX_COMPUTE_UNITS, sizeof(cl_uint), &num_cores, NULL);
 	if (err!=CL_SUCCESS)
 	{
 		printf("ERROR: Failed to get device information (max compute units)...\n");
@@ -156,7 +162,7 @@ bool COclManager::Setup_OpenCL( const char *program_source , const char *kernel_
 	printf("Using %d compute units...\n", num_cores);
 
 
-	err = clGetDeviceInfo(g_device_ID, CL_DEVICE_MEM_BASE_ADDR_ALIGN, sizeof(cl_uint), &g_min_align, NULL);
+	err = clGetDeviceInfo(m_env.g_device_ID, CL_DEVICE_MEM_BASE_ADDR_ALIGN, sizeof(cl_uint), &g_min_align, NULL);
 	if (err!=CL_SUCCESS)
 	{
 		printf("ERROR: Failed to get device information (max memory base address align size)...\n");
@@ -184,10 +190,10 @@ bool COclManager::Setup_OpenCL( const char *program_source , const char *kernel_
 
 void COclManager::Cleanup()
 {
-	if( g_kernel ) {clReleaseKernel( g_kernel );  g_kernel = NULL;}
-	if( g_program ) {clReleaseProgram( g_program );  g_program = NULL;}
-	if( g_cmd_queue ) {clReleaseCommandQueue( g_cmd_queue );  g_cmd_queue = NULL;}
-	if( g_context ) {clReleaseContext( g_context );  g_context = NULL;}
+	if( m_env.g_kernel ) {clReleaseKernel( m_env.g_kernel );  m_env.g_kernel = NULL;}
+	if( m_env.g_program ) {clReleaseProgram( m_env.g_program );  m_env.g_program = NULL;}
+	if( m_env.g_cmd_queue ) {clReleaseCommandQueue( m_env.g_cmd_queue );  m_env.g_cmd_queue = NULL;}
+	if( m_env.g_context ) {clReleaseContext( m_env.g_context );  m_env.g_context = NULL;}
 	//host memory
 	//    if(g_pfInput) {_aligned_free( g_pfInput ); g_pfInput = NULL;}
 	//    if(g_pfRegularOutput) {_aligned_free( g_pfRegularOutput ); g_pfRegularOutput = NULL;}
@@ -198,11 +204,11 @@ void COclManager::Cleanup()
 
 void COclManager::initialize()
 {
-	g_context = NULL;
-	g_cmd_queue = NULL;
-	g_program = NULL;
-	g_kernel = NULL;
+	m_env.g_context = NULL;
+	m_env.g_cmd_queue = NULL;
+	m_env.g_program = NULL;
+	m_env.g_kernel = NULL;
 
 	g_min_align = 0;
-	g_device_ID =0;
+	m_env.g_device_ID =0;
 }

@@ -4,6 +4,11 @@
 
 #include <xmmintrin.h>		// SSE
 
+//#define FILENAME_MS3D "data/Dophi.ms3d"
+#define KernelFunctionNameString	"transformVectorByMatrix"
+#define KernelFileNameString		"MatrixMultPoint2D.cl"
+
+
 #define CENTER_ROTATE			0
 #define SCALE					0.995f
 #define ANGLE_THETA				50
