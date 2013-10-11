@@ -130,7 +130,7 @@ void CMatrixMultPoint2D::mmpParallel( )
 
 }
 
-void	matrixMultiply(float mLeft[][ELEMENT_LENGTH_LINE], float mRight[][ELEMENT_LENGTH_LINE], float mResult[][ELEMENT_LENGTH_LINE])
+void	CMatrixMultPoint2D::matrixMultiply(float mLeft[][ELEMENT_LENGTH_LINE], float mRight[][ELEMENT_LENGTH_LINE], float mResult[][ELEMENT_LENGTH_LINE])
 {
 	double mMix[ELEMENT_LENGTH_LINE][ELEMENT_LENGTH_LINE] = { {0, 0, 0}, {0, 0, 0}, {0, 0, 0} } ; // 混合变换矩阵初始化
 	for( int i = 0 ; i < ELEMENT_LENGTH_LINE ; i++ )

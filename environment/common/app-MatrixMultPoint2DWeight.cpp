@@ -296,25 +296,57 @@ void CMatrixMultPoint2DWeight::kernel( float imgIn[][SIZE_WIDTH][ELEMENT_COUNT_P
 		{
 			float x = imgIn[i][j][0];
 			float y = imgIn[i][j][1];
+#if  CENTER_ROTATE
+			float offset = 4.0f;
+			float distance = sqrt( (x-SIZE_WIDTH/2.0f)*(x-SIZE_WIDTH/2.0f) + (y-SIZE_HEIGHT/2.0f)*(y-SIZE_HEIGHT/2.0f) + offset) ;
+			float weight = 1.0f / sqrt(distance)  ;
 
+			float radOne = rad * weight;
+
+			float mOne[ELEMENT_LENGTH_LINE][ELEMENT_LENGTH_LINE] = { {1, 0, 0}, {0, 1, 0}, {0, 0, 1} } ; // 混合变换矩阵初始化
+			float mt[ELEMENT_LENGTH_LINE][ELEMENT_LENGTH_LINE] = { {1, 0, 0}, {0, 1, 0}, {0, 0, 1} } ; // 分步变换矩阵初始化 平移
+			float mr[ELEMENT_LENGTH_LINE][ELEMENT_LENGTH_LINE] = { {1, 0, 0}, {0, 1, 0}, {0, 0, 1} } ; // 分步变换矩阵初始化 旋转
+			float ms[ELEMENT_LENGTH_LINE][ELEMENT_LENGTH_LINE] = { {1, 0, 0}, {0, 1, 0}, {0, 0, 1} } ; // 分步变换矩阵初始化 缩放
+			// 中心平移到原点
+			mt[2][0] = SIZE_WIDTH/2.0f ;
+			mt[2][1] = SIZE_HEIGHT/2.0f ;
+			matrixMultiply( mt, mOne, mOne );
+
+			mr[0][0] = cos( radOne ) ;
+			mr[0][1] = sin( radOne ) ;
+			mr[1][0] = -sin( radOne ) ;
+			mr[1][1] = cos( radOne ) ;
+			matrixMultiply( mr, mOne, mOne );
+			
+			// 缩放矩阵 平移矩阵
+			ms[0][0] = SCALE ;
+			ms[1][1] = SCALE ;
+			matrixMultiply( ms, mOne, mOne );
+			
+			// 平移回原中心
+			mt[2][0] = -SIZE_WIDTH/2.0f ;
+			mt[2][1] = -SIZE_HEIGHT/2.0f ;
+			matrixMultiply( mt, mOne, mOne );
+
+			imgOut[i][j][0] = x * mOne[0][0] + y * mOne[1][0] + mOne[2][0];
+			imgOut[i][j][1] = x * mOne[0][1] + y * mOne[1][1] + mOne[2][1];
+#else
 			float offset = 4.0f;
 			float distance = sqrt( x*x + y*y + offset) ;
 			float weight = 1.0f / sqrt(distance)  ;
 
 			float radOne = rad * weight;
-			float mOne[2][2];
+			float mOne [3][3] = { {1, 0, 0}, {0, 1, 0}, {0, 0, 1} } ; // 混合变换矩阵初始化
 
-			mOne[0][0] = cos( radOne ) ;
-			mOne[0][1] = sin( radOne ) ;
-			mOne[1][0] = -sin( radOne ) ;
-			mOne[1][1] = cos( radOne ) ;
+			// 旋转 缩放
+			mOne[0][0] = cos( radOne ) * SCALE;
+			mOne[0][1] = sin( radOne ) * SCALE ;
+			mOne[1][0] = -sin( radOne ) * SCALE ;
+			mOne[1][1] = cos( radOne ) * SCALE ;
 
-			// 缩放矩阵 平移矩阵
-			//m[0][0] *= SCALE ;
-			//m[1][1] *= SCALE ;
-
-			imgOut[i][j][0] = x * mOne[0][0] + y * mOne[1][0] ;
-			imgOut[i][j][1] = x * mOne[0][1] + y * mOne[1][1] ;
+#endif
+			imgOut[i][j][0] = x * mOne[0][0] + y * mOne[1][0] + mOne[2][0];
+			imgOut[i][j][1] = x * mOne[0][1] + y * mOne[1][1] + mOne[2][1];
 		}
 
 }
@@ -442,6 +474,7 @@ void CMatrixMultPoint2DWeight::kernelSSE( float* imgIn, float* imgOut, int i, fl
 		__m128 tmp01 = _mm_mul_ps( mat[1], vIny );
 
 		__m128 vOut0 = _mm_add_ps( tmp00, tmp01 );
+		vOut0 = _mm_mul_ps( vOut0, _mm_set_ps1( SCALE ) );
 
 		pDestPos[j+nOffset] = vOut0 ;
 
@@ -449,4 +482,21 @@ void CMatrixMultPoint2DWeight::kernelSSE( float* imgIn, float* imgOut, int i, fl
 	}
 #endif
 
+}
+
+void CMatrixMultPoint2DWeight::matrixMultiply( float mLeft[][ELEMENT_LENGTH_LINE], float mRight[][ELEMENT_LENGTH_LINE], float mResult[][ELEMENT_LENGTH_LINE] )
+{
+	double mMix[ELEMENT_LENGTH_LINE][ELEMENT_LENGTH_LINE] = { {0, 0, 0}, {0, 0, 0}, {0, 0, 0} } ; // 混合变换矩阵初始化
+	for( int i = 0 ; i < ELEMENT_LENGTH_LINE ; i++ )
+		for( int j = 0 ; j < ELEMENT_LENGTH_LINE ; j++ )
+		{
+			for( int k = 0 ; k < ELEMENT_LENGTH_LINE ; k++ )
+			{
+				mMix[i][j] += mLeft[i][k] * mRight[k][j];
+			}
+		}
+
+		for( int i = 0 ; i < ELEMENT_LENGTH_LINE ; i++ )
+			for( int j = 0 ; j < ELEMENT_LENGTH_LINE ; j++ )
+				mResult[i][j] = mMix[i][j];
 }

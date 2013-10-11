@@ -4,7 +4,8 @@
 
 #include <xmmintrin.h>		// SSE
 
-#define SCALE					1.05
+#define CENTER_ROTATE			0
+#define SCALE					0.995f
 #define ANGLE_THETA				50
 #define PI 3.1415927
 #define ANGLE_THETA_RAD			((ANGLE_THETA) * PI /180)
@@ -64,6 +65,7 @@ protected:
 	void kernelElement(float* pIn, float* pOut, float* pMat);
 
 	void kernelSSE(   float* imgIn, float* imgOut, int i, float rad=0.0f );
+	void matrixMultiply(float mLeft[][ELEMENT_LENGTH_LINE], float mRight[][ELEMENT_LENGTH_LINE], float mResult[][ELEMENT_LENGTH_LINE]);
 
 private:
 	float (*m_imgIn)[SIZE_WIDTH][ELEMENT_COUNT_POINT],(*m_pOutRef)[SIZE_WIDTH][ELEMENT_COUNT_POINT],(*m_imgOut)[SIZE_WIDTH][ELEMENT_COUNT_POINT];

@@ -6,9 +6,9 @@
 #include "../common/timer.h"
 #include "../common/timerOMP.h"
 #include "../common/app-MatrixMultVector.h"
-#include "../common/app-MatrixMultPoint3D.h"
-#include "../common/app-MatrixMultPoint2D.h"
-//#include "../common/app-MatrixMultPoint2DWeight.h"
+//#include "../common/app-MatrixMultPoint3D.h"
+//#include "../common/app-MatrixMultPoint2D.h"
+#include "../common/app-MatrixMultPoint2DWeight.h"
 
 #define MAX_LOADSTRING 100
 
@@ -24,7 +24,7 @@ LRESULT CALLBACK	WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK	About(HWND, UINT, WPARAM, LPARAM);
 
 //CMatrixMultVector mv;
-CMatrixMultPoint2D mv;
+CMatrixMultPoint2DWeight mv;
 CTimerOMP  timer1;
 
 std::vector<std::string>			resultString;
@@ -308,9 +308,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		{
 			int nStride = SIZE_WIDTH/ (1<<6);
 
-			int xOffset = 100 ;
-			int yOffset = xOffset;
-			float nScale = SIZE_WIDTH/ (float)(1<<9);
+			int xOffset = 1000 ;
+			int yOffset = xOffset/2.0f;
+			float nScale = SIZE_WIDTH/ (float)(1<<8);
 			for ( int i=0;i<SIZE_HEIGHT-nStride;i+= nStride )
 			{
 				for (int j=0;j<SIZE_WIDTH-nStride;j+= nStride )

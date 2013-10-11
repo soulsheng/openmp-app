@@ -59,6 +59,7 @@ protected:
 	void kernelElement(float* pIn, float* pOut, float* pMat);
 
 	void kernelSSE(   float* imgIn, float* imgOut, __m128& m0, __m128& m1, __m128& m2, int i );
+	void matrixMultiply(float mLeft[][ELEMENT_LENGTH_LINE], float mRight[][ELEMENT_LENGTH_LINE], float mResult[][ELEMENT_LENGTH_LINE]);
 
 private:
 	float (*m_imgIn)[SIZE_WIDTH][ELEMENT_COUNT_POINT],(*m_pOutRef)[SIZE_WIDTH][ELEMENT_COUNT_POINT],(*m_imgOut)[SIZE_WIDTH][ELEMENT_COUNT_POINT];
