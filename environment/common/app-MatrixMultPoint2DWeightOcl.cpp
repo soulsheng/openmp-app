@@ -534,7 +534,7 @@ void CMatrixMultPoint2DWeightOCL::SetupKernel()
 bool CMatrixMultPoint2DWeightOCL::ExecuteKernel()
 {
 	cl_int   err;
-
+#if TRANSPORT_DATA_OCL_IN
 	err = clEnqueueWriteBuffer( m_pEnvOpenCL->g_cmd_queue, m_argOCL.m_pfInputBuffer, CL_TRUE, 0, 
 		SIZE_HEIGHT*SIZE_WIDTH*ELEMENT_COUNT_POINT*sizeof(float) , m_pIn, 0, NULL, NULL);
 
@@ -543,7 +543,7 @@ bool CMatrixMultPoint2DWeightOCL::ExecuteKernel()
 		printf("ERROR: Failed to clEnqueueReadBuffer...\n");
 		return false;
 	}
-
+#endif
 	//Set kernel arguments
 	clSetKernelArg( m_pEnvOpenCL->g_kernel, 0, sizeof(cl_mem), (void *) &m_argOCL.m_pfInputBuffer );
 	clSetKernelArg( m_pEnvOpenCL->g_kernel, 1, sizeof(cl_mem), (void *) &m_argOCL.m_pfOCLOutputBuffer );
@@ -578,6 +578,7 @@ bool CMatrixMultPoint2DWeightOCL::ExecuteKernel()
 		return false;
 	}
 
+#if TRANSPORT_DATA_OCL_OUT
 	void* tmp_ptr = NULL;
 	err = clEnqueueReadBuffer( m_pEnvOpenCL->g_cmd_queue, m_argOCL.m_pfOCLOutputBuffer, CL_TRUE, 0, 
 		SIZE_HEIGHT*SIZE_WIDTH*ELEMENT_COUNT_POINT*sizeof(float) , m_pOut, 0, NULL, NULL);
@@ -587,6 +588,7 @@ bool CMatrixMultPoint2DWeightOCL::ExecuteKernel()
 		printf("ERROR: Failed to clEnqueueReadBuffer...\n");
 		return false;
 	}
+#endif
 
 	clFinish( m_pEnvOpenCL->g_cmd_queue );
 

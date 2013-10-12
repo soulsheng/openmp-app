@@ -12,6 +12,8 @@
 
 
 #define OPTIMIZE_OPENCL			1
+#define TRANSPORT_DATA_OCL_IN	1
+#define TRANSPORT_DATA_OCL_OUT	1
 
 #define CENTER_ROTATE			0
 #define SCALE					0.995f
