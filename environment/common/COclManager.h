@@ -36,6 +36,7 @@ public:
 	bool Setup_OpenCL( const char *program_source , const char *kernel_name );
 	void initialize();
 	void Cleanup();
+	ENV_OPENCL* getEnvOpenCL() { return &m_env;}
 protected:
 
 private:

@@ -4,10 +4,14 @@
 
 #include <xmmintrin.h>		// SSE
 
+#include "COclManager.h"
+
 //#define FILENAME_MS3D "data/Dophi.ms3d"
 #define KernelFunctionNameString	"transformVectorByMatrix"
 #define KernelFileNameString		"MatrixMultPoint2D.cl"
 
+
+#define OPTIMIZE_OPENCL			1
 
 #define CENTER_ROTATE			0
 #define SCALE					0.995f
@@ -22,7 +26,7 @@
 #define SIZE_POINT_PER_TIME		1
 
 #define OPTIMIZE_SERIAL			1 // 串行优化
-#define OUTPUT_TEXT_OR_IMAGE	1 // 1文本 ；0图形
+#define OUTPUT_TEXT_OR_IMAGE	0 // 1文本 ；0图形
 
 #define ONE_MATRIX_EACH_POINT	0
 
@@ -57,6 +61,11 @@ public:
 
 	void	accumulate();
 
+	void setEnvOpenCL(ENV_OPENCL* pEnv) { m_pEnvOpenCL = pEnv;}
+	
+	bool ExecuteKernel();
+	void SetupKernel();
+
 	CMatrixMultPoint2DWeightOCL();
 	~CMatrixMultPoint2DWeightOCL();
 protected:
@@ -71,7 +80,6 @@ protected:
 
 	void kernelSSE(   float* imgIn, float* imgOut, int i, float rad=0.0f );
 	void matrixMultiply(float mLeft[][ELEMENT_LENGTH_LINE], float mRight[][ELEMENT_LENGTH_LINE], float mResult[][ELEMENT_LENGTH_LINE]);
-
 private:
 	float (*m_imgIn)[SIZE_WIDTH][ELEMENT_COUNT_POINT],(*m_pOutRef)[SIZE_WIDTH][ELEMENT_COUNT_POINT],(*m_imgOut)[SIZE_WIDTH][ELEMENT_COUNT_POINT];
 	float (*m_pMat)[ELEMENT_COUNT_LINE][ELEMENT_LENGTH_LINE];
@@ -81,6 +89,18 @@ private:
 
 	float *m_pIn, *m_pOut;
 	float *m_pMatrix;
+
+	ENV_OPENCL*	m_pEnvOpenCL;
+
+	struct  OCLKernelArguments
+	{
+		cl_mem m_pfInputBuffer ;
+		cl_mem m_pfOCLOutputBuffer ;
+		
+		size_t globalWorkSize[2];
+		size_t localWorkSize[2];
+	};
+	OCLKernelArguments m_argOCL;
 };
 
 

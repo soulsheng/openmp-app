@@ -26,5 +26,8 @@
 #define NAME_STRING_PLATFORM_3	"AMD Accelerated Parallel Processing"
 #define NAME_STRING_PLATFORM_4	"NVIDIA CUDA"
 
+#define  LocalWorkX		8
+#define  LocalWorkY		8
+#define  LocalWorkSizeDef	1//局部线程块采用默认数目
 
 // TODO: 在此处引用程序需要的其他头文件

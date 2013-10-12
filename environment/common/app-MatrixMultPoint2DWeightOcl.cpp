@@ -4,7 +4,7 @@
 #include <stdlib.h>
 
 #include "app-MatrixMultPoint2DWeightOCL.h"
-
+#include "utils.h"
 
 
 int CMatrixMultPoint2DWeightOCL::mmp(  bool bMulti )
@@ -245,12 +245,16 @@ void CMatrixMultPoint2DWeightOCL::UnInit()
 
 void CMatrixMultPoint2DWeightOCL::Implement( bool bMulti )
 {
+#if  OPTIMIZE_OPENCL
+	ExecuteKernel();
+#else
 	m_bMulti = bMulti;
 
 	if( m_bMulti )
 		mmpParallel( );
 	else
 		mmpSerial( );
+#endif
 }
 
 CMatrixMultPoint2DWeightOCL::CMatrixMultPoint2DWeightOCL()
@@ -499,4 +503,92 @@ void CMatrixMultPoint2DWeightOCL::matrixMultiply( float mLeft[][ELEMENT_LENGTH_L
 		for( int i = 0 ; i < ELEMENT_LENGTH_LINE ; i++ )
 			for( int j = 0 ; j < ELEMENT_LENGTH_LINE ; j++ )
 				mResult[i][j] = mMix[i][j];
+}
+
+void CMatrixMultPoint2DWeightOCL::SetupKernel()
+{
+	const cl_mem_flags INFlags  = CL_MEM_COPY_HOST_PTR | CL_MEM_READ_ONLY; 
+	const cl_mem_flags OUTFlags = CL_MEM_COPY_HOST_PTR | CL_MEM_READ_WRITE;
+
+	m_argOCL.m_pfInputBuffer = clCreateBuffer( m_pEnvOpenCL->g_context, INFlags, 
+		 SIZE_HEIGHT*SIZE_WIDTH*ELEMENT_COUNT_POINT*sizeof(float),	m_pIn,	NULL); 
+
+	m_argOCL.m_pfOCLOutputBuffer = clCreateBuffer( m_pEnvOpenCL->g_context, INFlags, 
+		SIZE_HEIGHT*SIZE_WIDTH*ELEMENT_COUNT_POINT*sizeof(float),	m_pOut,	NULL); 
+
+	// thread size
+	m_argOCL.localWorkSize[0] = LocalWorkX;
+	m_argOCL.localWorkSize[1] = LocalWorkX;
+
+	size_t  workGroupSizeMaximum;
+	clGetKernelWorkGroupInfo( m_pEnvOpenCL->g_kernel, m_pEnvOpenCL->g_device_ID, CL_KERNEL_WORK_GROUP_SIZE, sizeof(size_t), (void *)&workGroupSizeMaximum, NULL);
+
+	int nElementSizePadding = roundToPowerOf2( SIZE_HEIGHT*SIZE_WIDTH/2 );
+	if ( nElementSizePadding > workGroupSizeMaximum )
+	{
+		m_argOCL.globalWorkSize[0] = workGroupSizeMaximum;
+		m_argOCL.globalWorkSize[1] = nElementSizePadding / workGroupSizeMaximum;
+	}
+}
+
+bool CMatrixMultPoint2DWeightOCL::ExecuteKernel()
+{
+	cl_int   err;
+
+	err = clEnqueueWriteBuffer( m_pEnvOpenCL->g_cmd_queue, m_argOCL.m_pfInputBuffer, CL_TRUE, 0, 
+		SIZE_HEIGHT*SIZE_WIDTH*ELEMENT_COUNT_POINT*sizeof(float) , m_pIn, 0, NULL, NULL);
+
+	if (err != CL_SUCCESS)
+	{
+		printf("ERROR: Failed to clEnqueueReadBuffer...\n");
+		return false;
+	}
+
+	//Set kernel arguments
+	clSetKernelArg( m_pEnvOpenCL->g_kernel, 0, sizeof(cl_mem), (void *) &m_argOCL.m_pfInputBuffer );
+	clSetKernelArg( m_pEnvOpenCL->g_kernel, 1, sizeof(cl_mem), (void *) &m_argOCL.m_pfOCLOutputBuffer );
+
+	float rad = ANGLE_THETA_RAD ;
+	clSetKernelArg( m_pEnvOpenCL->g_kernel, 2, sizeof(float), &rad);
+
+	float scale = SCALE ;
+	clSetKernelArg( m_pEnvOpenCL->g_kernel, 3, sizeof(float), &scale);
+	
+	int sizeMax = SIZE_HEIGHT*SIZE_WIDTH/2 ;
+	clSetKernelArg( m_pEnvOpenCL->g_kernel, 4, sizeof(int), &sizeMax);
+
+
+
+	//execute opencl
+	cl_event g_perf_event = NULL;
+#if LocalWorkSizeDef
+	err= clEnqueueNDRangeKernel( m_pEnvOpenCL->g_cmd_queue, m_pEnvOpenCL->g_kernel, 2, NULL, m_argOCL.globalWorkSize, NULL, 0, NULL, &g_perf_event);
+#else
+	err= clEnqueueNDRangeKernel( m_pEnvOpenCL->g_cmd_queue, m_pEnvOpenCL->g_kernel, 2, NULL, m_argOCL.globalWorkSize, m_argOCL.localWorkSize, 0, NULL, &g_perf_event);
+#endif
+	if (err != CL_SUCCESS)
+	{
+		printf("ERROR: Failed to execute kernel...\n");
+		return false;
+	}
+	err = clWaitForEvents(1, &g_perf_event);
+	if (err != CL_SUCCESS)
+	{
+		printf("ERROR: Failed to clWaitForEvents...\n");
+		return false;
+	}
+
+	void* tmp_ptr = NULL;
+	err = clEnqueueReadBuffer( m_pEnvOpenCL->g_cmd_queue, m_argOCL.m_pfOCLOutputBuffer, CL_TRUE, 0, 
+		SIZE_HEIGHT*SIZE_WIDTH*ELEMENT_COUNT_POINT*sizeof(float) , m_pOut, 0, NULL, NULL);
+
+	if (err != CL_SUCCESS)
+	{
+		printf("ERROR: Failed to clEnqueueReadBuffer...\n");
+		return false;
+	}
+
+	clFinish( m_pEnvOpenCL->g_cmd_queue );
+
+	return true;
 }
